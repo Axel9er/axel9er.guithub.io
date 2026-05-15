@@ -1,0 +1,2351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShowInsight — Premier Entertainment Experiences</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #000000;
+    --white: #FFFFFF;
+    --gold: #D4AF37;
+    --gold-light: #E8C84A;
+    --gold-dim: rgba(212,175,55,0.15);
+    --dark: #0A0A0A;
+    --charcoal: #161616;
+    --gray: #1E1E1E;
+    --mid-gray: #2A2A2A;
+    --text-dim: rgba(255,255,255,0.55);
+    --text-muted: rgba(255,255,255,0.3);
+    --border: rgba(212,175,55,0.2);
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-serif: 'Cormorant Garamond', serif;
+    --font-body: 'DM Sans', sans-serif;
+    --nav-top-h: 58px;
+    --nav-sec-h: 46px;
+    --nav-total: 104px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: var(--font-body);
+    font-weight: 300;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* ── CURSOR ── */
+  .cursor { position: fixed; width: 8px; height: 8px; background: var(--gold); border-radius: 50%; pointer-events: none; z-index: 99999; transform: translate(-50%,-50%); transition: transform 0.1s; }
+  .cursor-ring { position: fixed; width: 32px; height: 32px; border: 1px solid rgba(212,175,55,0.5); border-radius: 50%; pointer-events: none; z-index: 99998; transform: translate(-50%,-50%); transition: all 0.18s ease; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: var(--black); }
+  ::-webkit-scrollbar-thumb { background: var(--gold); }
+
+  /* ── PAGES ── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ═══════════════════════════════
+     DUAL NAVIGATION
+  ═══════════════════════════════ */
+  .nav-top {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1001;
+    height: var(--nav-top-h);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 48px;
+    background: rgba(0,0,0,0.97);
+    backdrop-filter: blur(24px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    transition: background 0.4s;
+  }
+  .nav-location-tag {
+    font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--text-muted); display: flex; align-items: center; gap: 10px;
+    min-width: 180px;
+  }
+  .nav-live-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--gold); flex-shrink: 0;
+    box-shadow: 0 0 6px rgba(212,175,55,0.6);
+    animation: livePulse 2.4s ease-in-out infinite;
+  }
+  @keyframes livePulse { 0%,100%{opacity:0.4;transform:scale(0.9)} 50%{opacity:1;transform:scale(1.3)} }
+  .nav-logo {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    font-family: var(--font-display); font-size: 24px; letter-spacing: 6px;
+    color: var(--white); cursor: pointer; white-space: nowrap;
+    transition: opacity 0.3s;
+  }
+  .nav-logo:hover { opacity: 0.8; }
+  .nav-logo span { color: var(--gold); }
+  .nav-top-right {
+    display: flex; align-items: center; gap: 24px; min-width: 180px; justify-content: flex-end;
+  }
+  .nav-top-link {
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text-dim); cursor: pointer; text-decoration: none;
+    transition: color 0.3s; white-space: nowrap;
+  }
+  .nav-top-link:hover { color: var(--white); }
+  .nav-top-link.reservations {
+    background: var(--gold); color: var(--black); padding: 9px 22px;
+    font-weight: 500; border-radius: 1px; transition: background 0.3s, color 0.3s;
+  }
+  .nav-top-link.reservations:hover { background: var(--gold-light); }
+  .nav-admin-btn {
+    background: none; border: 1px solid rgba(255,255,255,0.12);
+    color: var(--text-muted); padding: 7px 14px;
+    font-family: var(--font-body); font-size: 9px; letter-spacing: 2px;
+    text-transform: uppercase; cursor: pointer; border-radius: 1px;
+    transition: all 0.3s; flex-shrink: 0;
+  }
+  .nav-admin-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* Secondary nav */
+  .nav-secondary {
+    position: fixed; top: var(--nav-top-h); left: 0; right: 0; z-index: 1000;
+    height: var(--nav-sec-h);
+    display: flex; align-items: stretch;
+    justify-content: center;
+    background: rgba(8,8,8,0.96);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+  }
+  .nav-secondary::-webkit-scrollbar { height: 0; }
+  .nav-sec-link {
+    display: flex; align-items: center;
+    font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: var(--text-dim); cursor: pointer; padding: 0 22px;
+    border-right: 1px solid rgba(255,255,255,0.05);
+    transition: color 0.3s, background 0.3s;
+    position: relative; white-space: nowrap; flex-shrink: 0;
+  }
+  .nav-sec-link:first-child { border-left: 1px solid rgba(255,255,255,0.05); }
+  .nav-sec-link::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+    height: 2px; background: var(--gold);
+    transform: scaleX(0); transition: transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94);
+  }
+  .nav-sec-link:hover { color: var(--white); }
+  .nav-sec-link.active { color: var(--white); }
+  .nav-sec-link:hover::after, .nav-sec-link.active::after { transform: scaleX(1); }
+
+  /* ═══════════════════════════════
+     HERO
+  ═══════════════════════════════ */
+  #hero {
+    height: 100vh; min-height: 720px;
+    position: relative; display: flex; align-items: flex-end;
+    padding-top: var(--nav-total); padding-bottom: 88px;
+    overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0;
+    background-color: #0b0a07;
+    background-image:
+      linear-gradient(175deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.05) 25%, rgba(0,0,0,0.6) 65%, rgba(0,0,0,0.97) 100%),
+      radial-gradient(ellipse at 68% 38%, rgba(212,175,55,0.13) 0%, transparent 52%),
+      radial-gradient(ellipse at 15% 75%, rgba(212,175,55,0.07) 0%, transparent 40%);
+  }
+  /* Subtle stage grid texture */
+  .hero-grid {
+    position: absolute; inset: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(212,175,55,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(212,175,55,0.03) 1px, transparent 1px);
+    background-size: 90px 90px;
+    mask-image: radial-gradient(ellipse at 50% 60%, black 10%, transparent 80%);
+  }
+  /* Atmospheric glow orbs */
+  .hero-orb {
+    position: absolute; border-radius: 50%; pointer-events: none; filter: blur(100px);
+  }
+  .hero-orb-1 { width: 700px; height: 700px; background: rgba(212,175,55,0.07); top: -150px; right: -100px; }
+  .hero-orb-2 { width: 450px; height: 450px; background: rgba(212,175,55,0.05); bottom: 0; left: 5%; }
+  .hero-orb-3 { width: 300px; height: 300px; background: rgba(180,120,20,0.06); top: 30%; right: 30%; }
+  /* Decorative vertical lines */
+  .hero-lines-deco {
+    position: absolute; top: 0; right: 8vw; bottom: 0; width: 1px;
+    background: linear-gradient(to bottom, transparent, rgba(212,175,55,0.15) 30%, rgba(212,175,55,0.15) 70%, transparent);
+    pointer-events: none;
+  }
+  .hero-content {
+    position: relative; z-index: 2;
+    padding: 0 8vw; width: 100%;
+  }
+  .hero-welcome {
+    font-family: var(--font-serif); font-size: 17px; font-style: italic;
+    color: var(--text-dim); letter-spacing: 1px; margin-bottom: 16px;
+    opacity: 0; animation: fadeUp 0.8s 0.35s forwards;
+  }
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(72px, 11.5vw, 150px);
+    line-height: 0.86; letter-spacing: 3px; margin-bottom: 10px;
+    opacity: 0; animation: fadeUp 0.9s 0.55s forwards;
+  }
+  .hero-title-italic {
+    font-family: var(--font-serif); font-style: italic;
+    color: var(--gold); font-size: clamp(48px, 7.5vw, 96px);
+    display: block; letter-spacing: 1px; line-height: 1.05; margin-bottom: 10px;
+    opacity: 0; animation: fadeUp 0.9s 0.7s forwards;
+  }
+  .hero-desc {
+    font-size: 15px; line-height: 1.85; color: var(--text-dim);
+    max-width: 500px; margin-bottom: 16px;
+    opacity: 0; animation: fadeUp 0.9s 0.85s forwards;
+  }
+  .hero-season-note {
+    font-family: var(--font-serif); font-style: italic;
+    font-size: 15px; color: var(--text-dim);
+    margin-bottom: 40px;
+    opacity: 0; animation: fadeUp 0.9s 0.95s forwards;
+  }
+  .hero-actions {
+    display: flex; gap: 16px; align-items: center;
+    opacity: 0; animation: fadeUp 0.9s 1.1s forwards;
+  }
+
+  /* Badge top right */
+  .hero-badge {
+    position: absolute; top: calc(var(--nav-total) + 48px); right: 8vw;
+    border: 1px solid var(--border); padding: 20px 28px; text-align: center;
+    background: rgba(0,0,0,0.5); backdrop-filter: blur(10px);
+    opacity: 0; animation: fadeIn 1s 1.3s forwards;
+  }
+  .hero-badge-sup {
+    font-size: 8px; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--gold); display: block; margin-bottom: 8px;
+  }
+  .hero-badge-year {
+    font-family: var(--font-display); font-size: 52px; line-height: 1; letter-spacing: 3px;
+    display: block;
+  }
+  .hero-badge-sub {
+    font-family: var(--font-serif); font-style: italic; font-size: 13px;
+    color: var(--text-dim); margin-top: 6px; display: block;
+  }
+
+  /* Scroll indicator */
+  .hero-scroll {
+    position: absolute; bottom: 0; left: 8vw;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--text-muted); writing-mode: vertical-rl;
+    opacity: 0; animation: fadeIn 1s 1.5s forwards;
+  }
+  .hero-scroll-line {
+    width: 1px; height: 56px;
+    background: linear-gradient(to bottom, var(--gold), transparent);
+    animation: scrollDrop 2.2s ease-in-out infinite;
+  }
+  @keyframes scrollDrop {
+    0%{opacity:0;clip-path:inset(0 0 100% 0)} 30%{opacity:1;clip-path:inset(0 0 0% 0)}
+    70%{opacity:1;clip-path:inset(0 0 0% 0)} 100%{opacity:0;clip-path:inset(100% 0 0 0)}
+  }
+
+  /* Stats row bottom right */
+  .hero-stats {
+    position: absolute; bottom: 40px; right: 8vw;
+    display: flex; gap: 44px; align-items: flex-end;
+    opacity: 0; animation: fadeUp 1s 1.2s forwards;
+  }
+  .hero-stat { text-align: center; }
+  .hero-stat-num {
+    font-family: var(--font-display); font-size: 44px;
+    color: var(--gold); line-height: 1; display: block;
+  }
+  .hero-stat-label {
+    font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text-muted); margin-top: 5px; display: block;
+  }
+  .hero-stat-divider {
+    width: 1px; height: 48px; background: var(--border); align-self: center;
+  }
+
+  /* ═══════════════════════════════
+     DISCOVER MORE
+  ═══════════════════════════════ */
+  #discover { background: var(--black); }
+  .discover-header {
+    padding: 88px 8vw 52px;
+    display: flex; justify-content: space-between; align-items: flex-end;
+  }
+  .discover-eyebrow {
+    font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--gold); display: flex; align-items: center; gap: 14px; margin-bottom: 16px;
+  }
+  .discover-eyebrow::before { content: ''; display: block; width: 28px; height: 1px; background: var(--gold); }
+  .discover-title {
+    font-family: var(--font-display);
+    font-size: clamp(44px, 6.5vw, 88px);
+    line-height: 0.88; letter-spacing: 2px;
+  }
+  .discover-cards {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 3px;
+  }
+  .discover-card {
+    position: relative; overflow: hidden; cursor: pointer;
+    aspect-ratio: 3/4; display: flex; flex-direction: column; justify-content: flex-end;
+  }
+  .dc-bg {
+    position: absolute; inset: 0;
+    transition: transform 0.75s cubic-bezier(0.25,0.46,0.45,0.94);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .discover-card:hover .dc-bg { transform: scale(1.07); }
+  .dc-bg-1 {
+    background:
+      linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.78) 100%),
+      linear-gradient(140deg, #160c00 0%, #3d2500 45%, #1a0f00 100%);
+  }
+  .dc-bg-2 {
+    background:
+      linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.78) 100%),
+      linear-gradient(140deg, #00040f 0%, #000c28 45%, #000306 100%);
+  }
+  .dc-bg-3 {
+    background:
+      linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.78) 100%),
+      linear-gradient(140deg, #0a0010 0%, #1c0030 45%, #080008 100%);
+  }
+  .dc-icon-bg {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 100px; opacity: 0.1; pointer-events: none;
+    transition: opacity 0.5s, transform 0.5s;
+  }
+  .discover-card:hover .dc-icon-bg { opacity: 0.18; transform: scale(1.1) translateY(-8px); }
+  .dc-body {
+    position: relative; z-index: 2; padding: 36px 40px 44px;
+  }
+  .dc-category {
+    font-size: 9px; letter-spacing: 3.5px; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 14px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .dc-category::before { content: ''; display: block; width: 20px; height: 1px; background: var(--gold); }
+  .dc-title {
+    font-family: var(--font-display); font-size: 48px;
+    letter-spacing: 2px; line-height: 0.9; margin-bottom: 24px;
+  }
+  .dc-link {
+    display: inline-flex; align-items: center; gap: 12px;
+    font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: var(--white); cursor: pointer;
+    border-bottom: 1px solid rgba(255,255,255,0.25); padding-bottom: 5px;
+    transition: all 0.35s;
+  }
+  .dc-link:hover { color: var(--gold); border-color: var(--gold); gap: 20px; }
+  .dc-link-arrow { transition: transform 0.35s; }
+  .dc-link:hover .dc-link-arrow { transform: translateX(4px); }
+
+  /* ═══════════════════════════════
+     HEADLINE SHOW FEATURE
+  ═══════════════════════════════ */
+  #show-feature {
+    position: relative; overflow: hidden; min-height: 75vh;
+    display: flex; align-items: center; background: var(--charcoal);
+  }
+  .sf-bg-left {
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(105deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.55) 55%, rgba(0,0,0,0.3) 100%),
+      radial-gradient(ellipse at 75% 50%, rgba(212,175,55,0.12) 0%, transparent 50%),
+      linear-gradient(135deg, #0d0900 0%, #1e1400 50%, #0a0600 100%);
+  }
+  .sf-image-side {
+    position: absolute; right: 0; top: 0; bottom: 0; width: 52%; overflow: hidden;
+  }
+  .sf-image-inner {
+    position: absolute; inset: 0;
+    background: linear-gradient(150deg, #1f1500 0%, #3d2a00 30%, #231800 60%, #0d0900 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 160px; opacity: 0.18; user-select: none;
+    transition: transform 6s ease;
+  }
+  #show-feature:hover .sf-image-inner { transform: scale(1.04); }
+  .sf-image-side::before {
+    content: ''; position: absolute; inset: 0; z-index: 1;
+    background: linear-gradient(90deg, var(--charcoal) 0%, rgba(22,22,22,0.4) 35%, transparent 60%);
+  }
+  /* Gold shimmer lines on image */
+  .sf-image-side::after {
+    content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+    background-image: repeating-linear-gradient(
+      -45deg, transparent 0px, transparent 40px,
+      rgba(212,175,55,0.03) 40px, rgba(212,175,55,0.03) 41px
+    );
+  }
+  .sf-content {
+    position: relative; z-index: 2;
+    padding: 96px 8vw; max-width: 54%;
+  }
+  .sf-eyebrow {
+    font-size: 9px; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--gold); display: flex; align-items: center; gap: 14px;
+    margin-bottom: 28px;
+  }
+  .sf-eyebrow::before { content: ''; display: block; width: 30px; height: 1px; background: var(--gold); }
+  .sf-title {
+    font-family: var(--font-display);
+    font-size: clamp(60px, 9vw, 120px);
+    line-height: 0.84; letter-spacing: 3px; margin-bottom: 10px;
+  }
+  .sf-title-sub {
+    font-family: var(--font-serif); font-style: italic;
+    color: var(--gold); font-size: clamp(36px, 5.5vw, 72px);
+    display: block; line-height: 1.1; margin-bottom: 36px;
+  }
+  .sf-desc {
+    font-size: 15px; line-height: 1.85; color: var(--text-dim);
+    max-width: 420px; margin-bottom: 36px;
+  }
+  .sf-worlds {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 44px;
+  }
+  .sf-world-tag {
+    border: 1px solid var(--border); padding: 7px 18px;
+    font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: var(--gold); background: rgba(212,175,55,0.04);
+    transition: all 0.3s;
+  }
+  .sf-world-tag:hover { background: var(--gold-dim); }
+  .sf-dates {
+    font-family: var(--font-serif); font-style: italic;
+    font-size: 16px; color: var(--text-dim); margin-bottom: 40px;
+  }
+
+  /* ═══════════════════════════════
+     SPOTLIGHT
+  ═══════════════════════════════ */
+  #spotlight { padding: 120px 8vw; background: var(--black); }
+  .spotlight-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 88px; align-items: center;
+  }
+  .spotlight-text {}
+  .sp-eyebrow {
+    font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--gold); display: flex; align-items: center; gap: 14px;
+    margin-bottom: 20px;
+  }
+  .sp-eyebrow::before { content: ''; display: block; width: 28px; height: 1px; background: var(--gold); }
+  .sp-title {
+    font-family: var(--font-display);
+    font-size: clamp(48px, 6.5vw, 84px);
+    line-height: 0.88; letter-spacing: 2px; margin-bottom: 6px;
+  }
+  .sp-title em {
+    font-family: var(--font-serif); font-style: italic;
+    color: var(--gold); font-size: 0.82em;
+  }
+  .sp-body {
+    color: var(--text-dim); font-size: 15px; line-height: 1.85;
+    margin-top: 28px; margin-bottom: 16px;
+  }
+  .sp-body + .sp-body { margin-top: 0; }
+  .sp-opening {
+    font-family: var(--font-serif); font-style: italic;
+    font-size: 16px; color: var(--text-dim); margin-top: 20px; margin-bottom: 36px;
+  }
+  .sp-cta {
+    display: inline-flex; align-items: center; gap: 14px;
+    font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: var(--white); cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.25);
+    padding-bottom: 5px; transition: all 0.35s; text-decoration: none;
+  }
+  .sp-cta:hover { color: var(--gold); border-color: var(--gold); gap: 22px; }
+  /* Spotlight image grid — 2×2 offset */
+  .spotlight-images {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 6px; position: relative;
+  }
+  .sp-img {
+    overflow: hidden; position: relative;
+  }
+  .sp-img-inner {
+    width: 100%; aspect-ratio: 3/4;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 60px; user-select: none;
+    transition: transform 0.6s ease;
+  }
+  .sp-img:hover .sp-img-inner { transform: scale(1.05); }
+  .sp-img-inner::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.4) 100%);
+  }
+  .sp-img:nth-child(1) { margin-top: 56px; }
+  .sp-img:nth-child(4) { margin-top: -56px; }
+  .spi-1 { background: linear-gradient(155deg, #1a0a00, #3d1800, #100600); }
+  .spi-2 { background: linear-gradient(155deg, #000818, #001030, #00040c); }
+  .spi-3 { background: linear-gradient(155deg, #0d0010, #1c0028, #07000a); }
+  .spi-4 { background: linear-gradient(155deg, #001510, #002820, #000a08); }
+
+  /* ═══════════════════════════════
+     PRIVATE EVENTS
+  ═══════════════════════════════ */
+  #private-events {
+    position: relative; overflow: hidden;
+    min-height: 62vh; display: flex; align-items: center;
+  }
+  .pe-bg {
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(100deg, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.55) 60%, rgba(0,0,0,0.75) 100%),
+      radial-gradient(ellipse at 78% 45%, rgba(212,175,55,0.11) 0%, transparent 50%),
+      linear-gradient(135deg, #08000e 0%, #120020 50%, #06000a 100%);
+  }
+  .pe-visual {
+    position: absolute; right: 0; top: 0; bottom: 0; width: 48%; overflow: hidden;
+  }
+  .pe-visual-inner {
+    position: absolute; inset: 0;
+    background: linear-gradient(145deg, #0d0015, #1e0030, #0d001a);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 140px; opacity: 0.15;
+    transition: transform 6s ease;
+  }
+  #private-events:hover .pe-visual-inner { transform: scale(1.04); }
+  .pe-visual::before {
+    content: ''; position: absolute; inset: 0; z-index: 1;
+    background: linear-gradient(90deg, var(--black) 0%, rgba(0,0,0,0.3) 40%, transparent 70%);
+  }
+  .pe-content {
+    position: relative; z-index: 2; padding: 80px 8vw; max-width: 560px;
+  }
+  .pe-eyebrow {
+    font-size: 9px; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--gold); display: flex; align-items: center; gap: 14px; margin-bottom: 22px;
+  }
+  .pe-eyebrow::before { content: ''; display: block; width: 28px; height: 1px; background: var(--gold); }
+  .pe-title {
+    font-family: var(--font-display);
+    font-size: clamp(48px, 6.5vw, 84px);
+    line-height: 0.88; letter-spacing: 2px; margin-bottom: 28px;
+  }
+  .pe-body {
+    color: var(--text-dim); font-size: 15px; line-height: 1.85; margin-bottom: 40px;
+  }
+
+  /* ═══════════════════════════════
+     GALLERY ROWS
+  ═══════════════════════════════ */
+  .gallery-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 3px; height: 310px;
+  }
+  .gc {
+    position: relative; overflow: hidden; cursor: pointer;
+  }
+  .gc-inner {
+    position: absolute; inset: 0; transition: transform 0.65s ease;
+    display: flex; align-items: center; justify-content: center; font-size: 56px;
+  }
+  .gc:hover .gc-inner { transform: scale(1.1); }
+  .gc-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.25); transition: background 0.4s;
+  }
+  .gc:hover .gc-overlay { background: rgba(0,0,0,0.1); }
+  .gc-1  { } .gc-1 .gc-inner  { background: linear-gradient(135deg, #1a0900, #3d1800, #1a0700); }
+  .gc-2  { } .gc-2 .gc-inner  { background: linear-gradient(135deg, #001830, #00294d, #000e18); }
+  .gc-3  { } .gc-3 .gc-inner  { background: linear-gradient(135deg, #0d1800, #1a3000, #0a1000); }
+  .gc-4  { } .gc-4 .gc-inner  { background: linear-gradient(135deg, #180018, #300030, #0c000c); }
+  .gc-5  { } .gc-5 .gc-inner  { background: linear-gradient(135deg, #1a1200, #332200, #1a0e00); }
+  .gc-6  { } .gc-6 .gc-inner  { background: linear-gradient(135deg, #001a1a, #003535, #000d0d); }
+  .gc-7  { } .gc-7 .gc-inner  { background: linear-gradient(135deg, #0a0018, #150030, #060010); }
+  .gc-8  { } .gc-8 .gc-inner  { background: linear-gradient(135deg, #1a0808, #350f0f, #180000); }
+
+  /* ═══════════════════════════════
+     MEET THE STARS (PERFORMERS)
+  ═══════════════════════════════ */
+  #meet-stars {
+    background: var(--black); padding: 100px 8vw;
+  }
+  .stars-header {
+    display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 56px;
+  }
+  .stars-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 3px;
+  }
+  .star-card {
+    position: relative; overflow: hidden; cursor: pointer; aspect-ratio: 2/3;
+  }
+  .star-bg {
+    position: absolute; inset: 0; transition: transform 0.65s ease;
+    display: flex; align-items: center; justify-content: center; font-size: 80px;
+  }
+  .star-card:hover .star-bg { transform: scale(1.07); }
+  .star-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.3) 50%, transparent 100%);
+    transition: opacity 0.4s;
+  }
+  .star-card:hover .star-overlay { opacity: 0.85; }
+  .star-info {
+    position: absolute; bottom: 0; left: 0; right: 0; padding: 26px;
+  }
+  .star-type {
+    font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 7px;
+  }
+  .star-name {
+    font-family: var(--font-display); font-size: 30px; letter-spacing: 1px; margin-bottom: 4px;
+  }
+  .star-rate {
+    font-family: var(--font-serif); font-style: italic;
+    font-size: 13px; color: var(--text-muted);
+  }
+  .star-cta {
+    display: none; margin-top: 12px;
+    font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--gold); border-bottom: 1px solid var(--border); padding-bottom: 3px;
+    width: fit-content;
+  }
+  .star-card:hover .star-cta { display: block; }
+  .star-price-tag {
+    position: absolute; top: 20px; right: 20px;
+    background: rgba(0,0,0,0.75); backdrop-filter: blur(6px);
+    border: 1px solid var(--border); padding: 6px 14px;
+    font-family: var(--font-serif); font-style: italic;
+    font-size: 13px; color: var(--gold);
+  }
+  .sb-1 { background: linear-gradient(155deg, #1a0a00, #3d1800, #100600); }
+  .sb-2 { background: linear-gradient(155deg, #000a1a, #001535, #00060d); }
+  .sb-3 { background: linear-gradient(155deg, #0d0a00, #2a2000, #0d0800); }
+  .sb-4 { background: linear-gradient(155deg, #0a001a, #1c0035, #060010); }
+
+  /* ═══════════════════════════════
+     INSIDER LIST
+  ═══════════════════════════════ */
+  #insider {
+    background: var(--charcoal);
+    border-top: 1px solid var(--border);
+    padding: 100px 8vw;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 80px; align-items: center;
+  }
+  .insider-eyebrow {
+    font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--gold); display: flex; align-items: center; gap: 14px;
+    margin-bottom: 20px;
+  }
+  .insider-eyebrow::before { content: ''; display: block; width: 28px; height: 1px; background: var(--gold); }
+  .insider-title {
+    font-family: var(--font-display);
+    font-size: clamp(40px, 5.5vw, 72px);
+    line-height: 0.88; letter-spacing: 2px; margin-bottom: 28px;
+  }
+  .insider-desc {
+    color: var(--text-dim); font-size: 15px; line-height: 1.85; margin-bottom: 12px;
+  }
+  .insider-tagline {
+    font-family: var(--font-serif); font-style: italic;
+    font-size: 17px; color: var(--text-dim); margin-top: 16px;
+  }
+  .insider-form { display: flex; flex-direction: column; gap: 14px; }
+  .ins-input {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+    color: var(--white); padding: 16px 20px;
+    font-family: var(--font-body); font-size: 14px;
+    border-radius: 1px; outline: none; transition: border-color 0.3s; width: 100%;
+  }
+  .ins-input:focus { border-color: var(--gold); background: rgba(212,175,55,0.03); }
+  .ins-input::placeholder { color: var(--text-muted); }
+
+  /* ═══════════════════════════════
+     FAQ
+  ═══════════════════════════════ */
+  #faq { background: var(--black); padding: 100px 8vw; }
+  .faq-header { margin-bottom: 56px; display: flex; justify-content: space-between; align-items: flex-end; }
+  .faq-list { max-width: 860px; }
+  .faq-item { border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .faq-q {
+    width: 100%; background: none; border: none; color: var(--white);
+    text-align: left; padding: 26px 0; cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--font-serif); font-size: 21px; font-style: italic;
+    letter-spacing: 0.5px; transition: color 0.3s;
+  }
+  .faq-q:hover { color: var(--gold); }
+  .faq-icon {
+    width: 30px; height: 30px; border: 1px solid var(--border); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0; color: var(--gold);
+    transition: all 0.35s; font-style: normal; margin-left: 24px;
+  }
+  .faq-item.open .faq-icon {
+    background: var(--gold); color: var(--black);
+    transform: rotate(45deg); border-color: var(--gold);
+  }
+  .faq-a {
+    max-height: 0; overflow: hidden;
+    transition: max-height 0.45s ease, padding 0.45s ease;
+    color: var(--text-dim); font-size: 14px; line-height: 1.85;
+  }
+  .faq-item.open .faq-a { max-height: 320px; padding-bottom: 28px; }
+  .faq-footer { margin-top: 44px; }
+
+  /* ═══════════════════════════════
+     NEWSLETTER FORM
+  ═══════════════════════════════ */
+  #newsletter-form-section {
+    background: var(--charcoal); border-top: 1px solid var(--border); padding: 80px 8vw;
+  }
+  .nf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
+  .nf-left {}
+  .nf-eyebrow {
+    font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--gold); display: flex; align-items: center; gap: 14px; margin-bottom: 20px;
+  }
+  .nf-eyebrow::before { content: ''; display: block; width: 28px; height: 1px; background: var(--gold); }
+  .nf-title {
+    font-family: var(--font-display);
+    font-size: clamp(36px, 5vw, 60px);
+    line-height: 0.88; letter-spacing: 2px; margin-bottom: 16px;
+  }
+  .nf-sub { color: var(--text-dim); font-size: 14px; line-height: 1.75; }
+  .nf-options-label {
+    font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--text-muted); margin-top: 32px; margin-bottom: 14px;
+  }
+  .nf-options { display: flex; gap: 8px; flex-wrap: wrap; }
+  .nf-opt {
+    border: 1px solid rgba(255,255,255,0.12);
+    padding: 8px 20px; font-size: 10px; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--text-dim); cursor: pointer;
+    transition: all 0.3s; border-radius: 1px; background: none;
+    font-family: var(--font-body);
+  }
+  .nf-opt:hover { border-color: var(--gold); color: var(--gold); }
+  .nf-opt.selected { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+  .nf-right { display: flex; flex-direction: column; gap: 14px; }
+  .nf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .nf-input {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+    color: var(--white); padding: 14px 18px;
+    font-family: var(--font-body); font-size: 14px;
+    border-radius: 1px; outline: none; transition: border-color 0.3s; width: 100%;
+  }
+  .nf-input:focus { border-color: var(--gold); background: rgba(212,175,55,0.03); }
+  .nf-input::placeholder { color: var(--text-muted); }
+  .nf-consent {
+    display: flex; gap: 12px; align-items: flex-start;
+    font-size: 12px; color: var(--text-muted); line-height: 1.6;
+  }
+  .nf-consent input { margin-top: 2px; accent-color: var(--gold); flex-shrink: 0; }
+  .nf-consent a { color: var(--gold); text-decoration: none; }
+  .nf-note { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+  /* ═══════════════════════════════
+     FOOTER
+  ═══════════════════════════════ */
+  footer {
+    background: var(--dark);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 64px 8vw 36px;
+  }
+  .footer-grid {
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 48px; margin-bottom: 56px;
+  }
+  .footer-brand {}
+  .footer-logo {
+    font-family: var(--font-display); font-size: 28px; letter-spacing: 5px; margin-bottom: 16px;
+  }
+  .footer-logo span { color: var(--gold); }
+  .footer-tagline {
+    font-family: var(--font-serif); font-style: italic;
+    font-size: 14px; color: var(--text-muted); line-height: 1.7; max-width: 260px;
+  }
+  .footer-col-title {
+    font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 20px;
+  }
+  .footer-links { list-style: none; }
+  .footer-links li { margin-bottom: 11px; }
+  .footer-links a {
+    font-size: 13px; color: var(--text-muted);
+    text-decoration: none; cursor: pointer; transition: color 0.3s;
+  }
+  .footer-links a:hover { color: var(--white); }
+  .footer-hr { border: none; border-top: 1px solid rgba(255,255,255,0.06); margin-bottom: 28px; }
+  .footer-bottom {
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
+  }
+  .footer-legal { display: flex; gap: 20px; flex-wrap: wrap; }
+  .footer-legal a {
+    font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text-muted); cursor: pointer; text-decoration: none; transition: color 0.3s;
+  }
+  .footer-legal a:hover { color: var(--white); }
+  .footer-locations-row {
+    display: flex; gap: 20px; align-items: center;
+  }
+  .footer-loc {
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text-muted); cursor: pointer; transition: color 0.3s;
+  }
+  .footer-loc:hover, .footer-loc.active { color: var(--gold); }
+  .footer-social { display: flex; gap: 10px; }
+  .social-btn {
+    width: 36px; height: 36px; border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; cursor: pointer; transition: all 0.3s; color: var(--text-muted);
+  }
+  .social-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ═══════════════════════════════
+     SHARED BUTTONS
+  ═══════════════════════════════ */
+  .btn-primary {
+    background: var(--gold); color: var(--black); padding: 15px 40px;
+    font-family: var(--font-body); font-size: 10px; font-weight: 500;
+    letter-spacing: 3px; text-transform: uppercase; border: none; cursor: pointer;
+    border-radius: 1px; transition: background 0.3s; position: relative; overflow: hidden;
+    display: inline-block;
+  }
+  .btn-primary::before {
+    content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0.15);
+    transform: translateX(-100%); transition: transform 0.4s ease;
+  }
+  .btn-primary:hover::before { transform: translateX(0); }
+  .btn-secondary {
+    background: none; color: var(--white); padding: 15px 40px;
+    font-family: var(--font-body); font-size: 10px; font-weight: 400;
+    letter-spacing: 3px; text-transform: uppercase;
+    border: 1px solid rgba(255,255,255,0.28); cursor: pointer;
+    border-radius: 1px; transition: all 0.3s; display: inline-block;
+  }
+  .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+  .text-link {
+    display: inline-flex; align-items: center; gap: 12px;
+    font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: var(--white); cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.25);
+    padding-bottom: 5px; transition: all 0.35s; text-decoration: none;
+  }
+  .text-link:hover { color: var(--gold); border-color: var(--gold); gap: 20px; }
+
+  /* ═══════════════════════════════
+     ANIMATIONS
+  ═══════════════════════════════ */
+  @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  .reveal { opacity:0; transform:translateY(36px); transition:opacity 0.9s ease,transform 0.9s ease; }
+  .reveal.visible { opacity:1; transform:translateY(0); }
+  .reveal-d1.visible { transition-delay:0.1s; }
+  .reveal-d2.visible { transition-delay:0.2s; }
+  .reveal-d3.visible { transition-delay:0.3s; }
+  .reveal-d4.visible { transition-delay:0.4s; }
+
+  /* ═══════════════════════════════
+     INNER PAGES
+  ═══════════════════════════════ */
+  .inner-page-top { height: var(--nav-total); background: var(--black); }
+  .inner-page-section { padding: 72px 8vw 80px; }
+  .inner-page-header { margin-bottom: 56px; }
+  .section-eyebrow {
+    font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--gold); display: flex; align-items: center; gap: 14px; margin-bottom: 16px;
+  }
+  .section-eyebrow::before { content: ''; display: block; width: 28px; height: 1px; background: var(--gold); }
+  .section-title {
+    font-family: var(--font-display); font-size: clamp(44px, 6.5vw, 88px);
+    line-height: 0.88; letter-spacing: 2px;
+  }
+  .section-title em { font-family: var(--font-serif); font-style: italic; color: var(--gold); font-size: 0.8em; }
+  .section-desc { color: var(--text-dim); font-size: 15px; line-height: 1.8; max-width: 520px; margin-top: 16px; }
+
+  /* Filter btns */
+  .filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .filter-btn {
+    background: none; border: 1px solid var(--border); color: var(--text-dim);
+    padding: 9px 22px; font-family: var(--font-body); font-size: 10px;
+    letter-spacing: 2px; text-transform: uppercase; cursor: pointer;
+    border-radius: 1px; transition: all 0.3s;
+  }
+  .filter-btn.active, .filter-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+
+  /* Performers grid */
+  .performers-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin-top: 48px;
+  }
+  .performer-card {
+    position: relative; overflow: hidden; aspect-ratio: 3/4;
+    cursor: pointer; background: var(--charcoal);
+  }
+  .performer-card:nth-child(2) { margin-top: 48px; }
+  .performer-card:nth-child(4) { margin-top: -48px; }
+  .performer-portrait {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 80px; transition: transform 0.65s ease;
+  }
+  .performer-card:hover .performer-portrait { transform: scale(1.08); }
+  .performer-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.96) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);
+  }
+  .performer-info { position: absolute; bottom: 0; left: 0; right: 0; padding: 28px; }
+  .performer-type { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+  .performer-name { font-family: var(--font-display); font-size: 28px; letter-spacing: 1px; margin-bottom: 5px; }
+  .performer-rating { font-size: 11px; color: var(--text-dim); display: flex; align-items: center; gap: 6px; }
+  .stars { color: var(--gold); letter-spacing: 2px; }
+  .performer-cta { display: none; margin-top: 14px; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); }
+  .performer-card:hover .performer-cta { display: block; }
+  .performer-price { position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.75); border: 1px solid var(--border); padding: 6px 14px; font-size: 12px; color: var(--gold); font-family: var(--font-serif); font-style: italic; }
+  .p1 { background: linear-gradient(160deg, #1a0a00, #3d1500, #1a0800); }
+  .p2 { background: linear-gradient(160deg, #000a1a, #001535, #00080d); }
+  .p3 { background: linear-gradient(160deg, #0d0a00, #2a2000, #0d0800); }
+  .p4 { background: linear-gradient(160deg, #0a001a, #1a0035, #060010); }
+
+  /* Shows page */
+  .shows-feature-list { display: grid; gap: 3px; margin-top: 48px; }
+  .show-feature-card {
+    background: var(--charcoal); border: 1px solid var(--border);
+    display: grid; grid-template-columns: 200px 1fr; overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .show-feature-card:hover { border-color: var(--gold); }
+  .sfc-thumb {
+    background: var(--gray); display: flex; align-items: center;
+    justify-content: center; font-size: 64px; min-height: 200px;
+  }
+  .sfc-body { padding: 36px 40px; }
+  .sfc-type { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+  .sfc-title { font-family: var(--font-display); font-size: 44px; letter-spacing: 2px; line-height: 0.9; margin-bottom: 16px; }
+  .sfc-desc { color: var(--text-dim); font-size: 14px; line-height: 1.75; margin-bottom: 20px; max-width: 560px; }
+  .sfc-meta { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 24px; }
+  .sfc-meta span { font-size: 12px; color: var(--text-dim); display: flex; align-items: center; gap: 6px; }
+  .sfc-price { color: var(--gold); font-family: var(--font-serif); font-style: italic; }
+
+  /* Packages page */
+  .packages-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; margin-top: 48px; }
+  .package-card {
+    background: var(--charcoal); padding: 48px 40px;
+    position: relative; overflow: hidden; cursor: pointer;
+    border: 1px solid transparent; transition: border-color 0.3s;
+  }
+  .package-card:hover { border-color: var(--border); }
+  .package-card.featured { background: var(--mid-gray); border-color: var(--gold) !important; }
+  .package-card.featured::before {
+    content: 'MOST POPULAR'; position: absolute; top: 0; right: 32px;
+    background: var(--gold); color: var(--black); font-size: 8px; letter-spacing: 2px;
+    padding: 6px 14px; font-weight: 500;
+  }
+  .pkg-tier { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+  .pkg-name { font-family: var(--font-display); font-size: 52px; letter-spacing: 2px; margin-bottom: 24px; }
+  .package-card.featured .pkg-name { color: var(--gold); }
+  .pkg-price { margin-bottom: 36px; }
+  .pkg-amount { font-family: var(--font-serif); font-size: 56px; font-style: italic; line-height: 1; }
+  .pkg-suffix { font-size: 12px; color: var(--text-dim); margin-left: 8px; }
+  .pkg-divider { width: 40px; height: 1px; background: var(--gold); margin-bottom: 32px; }
+  .pkg-includes { list-style: none; margin-bottom: 40px; }
+  .pkg-includes li { font-size: 14px; color: var(--text-dim); padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; gap: 12px; }
+  .pkg-includes li::before { content: '✦'; color: var(--gold); font-size: 8px; flex-shrink: 0; }
+  .pkg-includes li.hl { color: var(--white); }
+  .pkg-includes li.no { opacity: 0.35; text-decoration: line-through; }
+  .pkg-btn { width: 100%; background: none; border: 1px solid var(--border); color: var(--white); padding: 16px; font-family: var(--font-body); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; transition: all 0.3s; }
+  .package-card.featured .pkg-btn { background: var(--gold); border-color: var(--gold); color: var(--black); font-weight: 500; }
+  .pkg-btn:hover { background: var(--gold); border-color: var(--gold); color: var(--black); }
+
+  /* About page */
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; margin-top: 56px; }
+  .about-visual { position: relative; }
+  .about-main-img { width: 100%; aspect-ratio: 4/5; background: linear-gradient(160deg, #1a0800, #3d1500, #1a0400); display: flex; align-items: center; justify-content: center; font-size: 120px; position: relative; overflow: hidden; }
+  .about-main-img::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.6) 100%); }
+  .about-accent { position: absolute; bottom: -32px; right: -32px; width: 55%; background: var(--charcoal); border: 2px solid var(--gold); aspect-ratio: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 24px; text-align: center; }
+  .about-accent-num { font-family: var(--font-display); font-size: 64px; color: var(--gold); line-height: 1; }
+  .about-accent-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); }
+  .about-content h2 { font-family: var(--font-display); font-size: 56px; line-height: 0.9; }
+  .about-content h2 em { font-family: var(--font-serif); font-style: italic; color: var(--gold); font-size: 0.85em; }
+  .about-content p { color: var(--text-dim); font-size: 15px; line-height: 1.8; margin-top: 20px; }
+  .about-pillars { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 36px; }
+  .pillar { border-left: 1px solid var(--border); padding-left: 20px; }
+  .pillar-title { font-family: var(--font-display); font-size: 18px; color: var(--gold); letter-spacing: 1px; margin-bottom: 6px; }
+  .pillar-text { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+  /* Booking page */
+  .booking-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; margin-top: 56px; align-items: start; }
+  .booking-info h3 { font-family: var(--font-serif); font-size: 28px; font-style: italic; color: var(--gold); margin-bottom: 24px; }
+  .booking-info p { color: var(--text-dim); font-size: 15px; line-height: 1.8; margin-bottom: 24px; }
+  .booking-features { list-style: none; }
+  .booking-features li { padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; gap: 16px; font-size: 14px; color: var(--text-dim); }
+  .booking-features li::before { content: ''; display: block; width: 4px; height: 4px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
+  .booking-form { display: flex; flex-direction: column; gap: 16px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 8px; }
+  .form-label { font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-dim); }
+  .form-input, .form-select, .form-textarea { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: var(--white); padding: 14px 18px; font-family: var(--font-body); font-size: 14px; border-radius: 1px; transition: border-color 0.3s; outline: none; width: 100%; }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--gold); background: rgba(212,175,55,0.03); }
+  .form-select { appearance: none; cursor: pointer; }
+  .form-textarea { resize: vertical; min-height: 100px; }
+  .price-preview { background: var(--gold-dim); border: 1px solid var(--border); padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; border-radius: 1px; }
+  .price-preview-label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); }
+  .price-preview-amount { font-family: var(--font-serif); font-size: 32px; font-style: italic; color: var(--gold); }
+
+  /* ═══════════════════════════════
+     ADMIN DASHBOARD
+  ═══════════════════════════════ */
+  #admin-panel { display: none; position: fixed; inset: 0; z-index: 9000; background: var(--dark); }
+  #admin-panel.open { display: flex; }
+  .admin-sidebar { width: 240px; background: var(--charcoal); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+  .admin-logo { padding: 24px; border-bottom: 1px solid var(--border); font-family: var(--font-display); font-size: 20px; letter-spacing: 3px; }
+  .admin-logo span { color: var(--gold); }
+  .admin-logo small { display: block; font-family: var(--font-body); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin-top: 4px; }
+  .admin-nav { padding: 16px 0; flex: 1; }
+  .admin-nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 24px; font-size: 12px; letter-spacing: 1px; color: var(--text-dim); cursor: pointer; transition: all 0.2s; border-left: 2px solid transparent; }
+  .admin-nav-item:hover { color: var(--white); background: rgba(255,255,255,0.03); }
+  .admin-nav-item.active { color: var(--gold); border-left-color: var(--gold); background: var(--gold-dim); }
+  .admin-nav-icon { font-size: 15px; width: 20px; text-align: center; }
+  .admin-nav-section { padding: 16px 24px 8px; font-size: 8px; letter-spacing: 3px; text-transform: uppercase; color: var(--text-muted); }
+  .admin-close { padding: 20px 24px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px; font-size: 11px; color: var(--text-muted); cursor: pointer; transition: color 0.2s; }
+  .admin-close:hover { color: var(--white); }
+  .admin-main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+  .admin-topbar { background: var(--charcoal); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
+  .admin-topbar h1 { font-family: var(--font-display); font-size: 24px; letter-spacing: 2px; }
+  .admin-topbar-actions { display: flex; gap: 12px; }
+  .admin-btn { background: var(--gold); color: var(--black); border: none; padding: 10px 20px; font-family: var(--font-body); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; font-weight: 500; border-radius: 1px; transition: background 0.2s; }
+  .admin-btn:hover { background: var(--gold-light); }
+  .admin-btn-secondary { background: none; border: 1px solid var(--border); color: var(--text-dim); padding: 10px 20px; font-family: var(--font-body); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; border-radius: 1px; transition: all 0.2s; }
+  .admin-btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+  .admin-content { padding: 32px; flex: 1; }
+  .admin-panel-section { display: none; }
+  .admin-panel-section.active { display: block; }
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .stat-card { background: var(--charcoal); border: 1px solid var(--border); padding: 24px; border-radius: 2px; }
+  .stat-card-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; }
+  .stat-card-value { font-family: var(--font-display); font-size: 40px; letter-spacing: 1px; color: var(--white); line-height: 1; margin-bottom: 8px; }
+  .stat-card-change { font-size: 11px; color: #4CAF50; }
+  .stat-card-change.down { color: #f44336; }
+  .stat-card:first-child { border-top: 2px solid var(--gold); }
+  .admin-table-wrap { background: var(--charcoal); border: 1px solid var(--border); border-radius: 2px; overflow: hidden; margin-top: 24px; }
+  .admin-table-header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .admin-table-title { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); }
+  .admin-search { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: var(--white); padding: 8px 16px; font-size: 12px; border-radius: 1px; outline: none; width: 220px; }
+  .admin-search:focus { border-color: var(--gold); }
+  table { width: 100%; border-collapse: collapse; }
+  th { padding: 12px 24px; font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-muted); text-align: left; background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border); }
+  td { padding: 16px 24px; font-size: 13px; color: var(--text-dim); border-bottom: 1px solid rgba(255,255,255,0.04); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); color: var(--white); }
+  .status-badge { display: inline-block; padding: 4px 12px; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; border-radius: 20px; }
+  .badge-pending { background: rgba(255,193,7,0.15); color: #FFC107; }
+  .badge-confirmed { background: rgba(76,175,80,0.15); color: #4CAF50; }
+  .badge-completed { background: rgba(33,150,243,0.15); color: #2196F3; }
+  .badge-cancelled { background: rgba(244,67,54,0.15); color: #f44336; }
+  .table-action { background: none; border: 1px solid var(--border); color: var(--text-dim); padding: 5px 12px; font-size: 10px; cursor: pointer; border-radius: 1px; transition: all 0.2s; }
+  .table-action:hover { border-color: var(--gold); color: var(--gold); }
+  .table-action.danger:hover { border-color: #f44336; color: #f44336; }
+  .admin-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; background: var(--charcoal); border: 1px solid var(--border); padding: 32px; border-radius: 2px; }
+  .admin-form-group { display: flex; flex-direction: column; gap: 8px; }
+  .admin-form-group.full { grid-column: span 2; }
+  .admin-form-label { font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-muted); }
+  .admin-form-input, .admin-form-select, .admin-form-textarea { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: var(--white); padding: 12px 16px; font-family: var(--font-body); font-size: 13px; border-radius: 1px; outline: none; transition: border-color 0.2s; }
+  .admin-form-input:focus, .admin-form-select:focus, .admin-form-textarea:focus { border-color: var(--gold); }
+  .admin-form-textarea { resize: vertical; min-height: 100px; }
+  .admin-form-actions { grid-column: span 2; display: flex; gap: 12px; justify-content: flex-end; padding-top: 8px; }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 8000; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--charcoal); border: 1px solid var(--border); padding: 48px; width: 90%; max-width: 460px; position: relative; animation: fadeUp 0.4s ease; }
+  .modal-title { font-family: var(--font-display); font-size: 36px; letter-spacing: 2px; margin-bottom: 8px; }
+  .modal-sub { color: var(--text-dim); font-size: 14px; margin-bottom: 32px; }
+  .modal-close { position: absolute; top: 24px; right: 24px; background: none; border: none; color: var(--text-dim); font-size: 18px; cursor: pointer; transition: color 0.2s; line-height: 1; }
+  .modal-close:hover { color: var(--white); }
+  .login-form { display: flex; flex-direction: column; gap: 16px; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 32px; right: 32px; background: var(--gold); color: var(--black); padding: 16px 24px; font-size: 13px; font-weight: 500; z-index: 99999; animation: fadeUp 0.4s ease; border-radius: 1px; }
+
+  /* ═══════════════════════════════
+     RESPONSIVE
+  ═══════════════════════════════ */
+  @media (max-width: 1200px) {
+    .nav-sec-link { padding: 0 16px; font-size: 9px; }
+    .discover-cards { grid-template-columns: 1fr 1fr 1fr; }
+    .sf-content { max-width: 60%; }
+    .spotlight-grid { gap: 56px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 1024px) {
+    .nav-top { padding: 0 32px; }
+    .discover-cards { grid-template-columns: 1fr 1fr; }
+    .sf-image-side { width: 40%; }
+    .sf-content { max-width: 65%; }
+    .spotlight-grid { grid-template-columns: 1fr; gap: 56px; }
+    .spotlight-images { grid-template-columns: repeat(4, 1fr); }
+    .sp-img:nth-child(1), .sp-img:nth-child(4) { margin-top: 0; }
+    .sp-img-inner { aspect-ratio: 1; }
+    .stars-grid { grid-template-columns: repeat(4, 1fr); }
+    .gallery-row { height: 240px; }
+    #insider { grid-template-columns: 1fr; gap: 48px; }
+    .nf-grid { grid-template-columns: 1fr; gap: 48px; }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+    .about-grid, .booking-grid { grid-template-columns: 1fr; }
+    .packages-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 768px) {
+    :root { --nav-top-h: 52px; --nav-sec-h: 42px; }
+    .nav-top { padding: 0 20px; }
+    .nav-logo { font-size: 20px; letter-spacing: 4px; }
+    .nav-location-tag { display: none; }
+    .nav-top-link:not(.reservations) { display: none; }
+    .nav-secondary { justify-content: flex-start; }
+    .nav-sec-link { padding: 0 14px; letter-spacing: 1.5px; }
+    .hero-badge { display: none; }
+    .hero-stats { display: none; }
+    .discover-cards { grid-template-columns: 1fr; }
+    .sf-image-side { display: none; }
+    .sf-content { max-width: 100%; }
+    .spotlight-images { grid-template-columns: 1fr 1fr; }
+    .gallery-row { grid-template-columns: 1fr 1fr; height: auto; }
+    .gc { aspect-ratio: 1; }
+    .stars-grid { grid-template-columns: 1fr 1fr; }
+    .performers-grid { grid-template-columns: 1fr 1fr; }
+    .performer-card:nth-child(2), .performer-card:nth-child(4) { margin-top: 0; }
+    .footer-grid { grid-template-columns: 1fr; }
+    .admin-sidebar { width: 200px; }
+    .admin-form-grid { grid-template-columns: 1fr; }
+    .admin-form-group.full { grid-column: span 1; }
+    .admin-form-actions { grid-column: span 1; }
+    .nf-row { grid-template-columns: 1fr; }
+    .show-feature-card { grid-template-columns: 1fr; }
+    .sfc-thumb { min-height: 140px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- CURSOR -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- ═══════════════════════════════
+     TOP NAVIGATION BAR
+═══════════════════════════════ -->
+<nav class="nav-top" id="navTop">
+  <div class="nav-location-tag">
+    <span class="nav-live-dot"></span>
+    Entertainment · Riyadh
+  </div>
+
+  <div class="nav-logo" onclick="navigate('home')">SHOW<span>INSIGHT</span></div>
+
+  <div class="nav-top-right">
+    <span class="nav-top-link" onclick="navigate('about')">About</span>
+    <span class="nav-top-link" onclick="navigate('booking')">Contact</span>
+    <span class="nav-top-link reservations" onclick="navigate('booking')">Reservations</span>
+    <button class="nav-admin-btn" onclick="openAdmin()">Admin ↗</button>
+  </div>
+</nav>
+
+<!-- SECONDARY NAV -->
+<nav class="nav-secondary" id="navSecondary">
+  <span class="nav-sec-link active" id="sec-home" onclick="navigate('home')">Discover</span>
+  <span class="nav-sec-link" id="sec-booking" onclick="navigate('booking')">Reservations</span>
+  <span class="nav-sec-link" id="sec-shows" onclick="navigate('shows')">Shows</span>
+  <span class="nav-sec-link" id="sec-about" onclick="navigate('about')">The Experience</span>
+  <span class="nav-sec-link" id="sec-packages" onclick="navigate('packages')">Packages</span>
+  <span class="nav-sec-link" id="sec-contact" onclick="navigate('booking')">Reach Us</span>
+  <span class="nav-sec-link" id="sec-performers" onclick="navigate('performers')">Meet The Stars</span>
+</nav>
+
+
+<!-- ═══════════════════════════════════════════════
+     HOME PAGE
+═══════════════════════════════════════════════ -->
+<div class="page active" id="page-home">
+
+  <!-- ── HERO ── -->
+  <section id="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="hero-orb hero-orb-3"></div>
+    <div class="hero-lines-deco"></div>
+
+    <!-- Season badge -->
+    <div class="hero-badge">
+      <span class="hero-badge-sup">Season Opening</span>
+      <span class="hero-badge-year">2026</span>
+      <span class="hero-badge-sub">Bookings now open</span>
+    </div>
+
+    <div class="hero-content">
+      <p class="hero-welcome">Welcome to ShowInsight</p>
+      <h1 class="hero-title">WHERE THE</h1>
+      <span class="hero-title-italic">Stage Comes Alive</span>
+      <p class="hero-desc">
+        This season, we raise the curtain on <strong>Opulent Nights</strong> — an immersive journey through four extraordinary worlds: Cabaret, Electric, Dark, and Euphoria. A show that defies the limits of live entertainment, designed to make you feel everything.
+      </p>
+      <p class="hero-season-note">The season opens with our Grand Opening on June 6th.<br>Bookings for the 2026 season are now open.</p>
+      <div class="hero-actions">
+        <button class="btn-primary" onclick="navigate('booking')">Book your table</button>
+        <button class="btn-secondary" onclick="navigate('shows')">Explore Shows</button>
+      </div>
+    </div>
+
+    <div class="hero-scroll">
+      <div class="hero-scroll-line"></div>
+      Scroll
+    </div>
+
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="hero-stat-num">200+</span>
+        <span class="hero-stat-label">Performances</span>
+      </div>
+      <div class="hero-stat-divider"></div>
+      <div class="hero-stat">
+        <span class="hero-stat-num">48</span>
+        <span class="hero-stat-label">Elite Performers</span>
+      </div>
+      <div class="hero-stat-divider"></div>
+      <div class="hero-stat">
+        <span class="hero-stat-num">99%</span>
+        <span class="hero-stat-label">Satisfaction</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── DISCOVER MORE ── -->
+  <section id="discover">
+    <div class="discover-header reveal">
+      <div>
+        <div class="discover-eyebrow">Explore ShowInsight</div>
+        <div class="discover-title">DISCOVER<br>MORE</div>
+      </div>
+    </div>
+    <div class="discover-cards">
+      <div class="discover-card reveal reveal-d1" onclick="navigate('packages')">
+        <div class="dc-bg dc-bg-1">
+          <div class="dc-icon-bg">🥂</div>
+        </div>
+        <div class="dc-body">
+          <div class="dc-category">Experiences</div>
+          <div class="dc-title">PACKAGES</div>
+          <span class="dc-link">View Packages <span class="dc-link-arrow">→</span></span>
+        </div>
+      </div>
+      <div class="discover-card reveal reveal-d2" onclick="navigate('shows')">
+        <div class="dc-bg dc-bg-2">
+          <div class="dc-icon-bg">🎭</div>
+        </div>
+        <div class="dc-body">
+          <div class="dc-category">Live Entertainment</div>
+          <div class="dc-title">THE SHOWS</div>
+          <span class="dc-link">Find out more <span class="dc-link-arrow">→</span></span>
+        </div>
+      </div>
+      <div class="discover-card reveal reveal-d3" onclick="navigate('performers')">
+        <div class="dc-bg dc-bg-3">
+          <div class="dc-icon-bg">🎤</div>
+        </div>
+        <div class="dc-body">
+          <div class="dc-category">Talent Roster</div>
+          <div class="dc-title">PERFORMERS</div>
+          <span class="dc-link">Find out more <span class="dc-link-arrow">→</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── HEADLINE SHOW FEATURE ── -->
+  <section id="show-feature">
+    <div class="sf-bg-left"></div>
+    <div class="sf-image-side">
+      <div class="sf-image-inner">🎪</div>
+    </div>
+    <div class="sf-content reveal">
+      <div class="sf-eyebrow">2026 Headline Production</div>
+      <h2 class="sf-title">OPULENT</h2>
+      <span class="sf-title-sub">Nights</span>
+      <p class="sf-desc">
+        Four themed worlds — Cabaret, Electric, Dark, and Euphoria — each unfolding as a universe of its own. A night designed to make you surrender to the spectacle. Featuring our finest ensemble of 12 world-class artists.
+      </p>
+      <div class="sf-worlds">
+        <span class="sf-world-tag">Cabaret</span>
+        <span class="sf-world-tag">Electric</span>
+        <span class="sf-world-tag">Dark</span>
+        <span class="sf-world-tag">Euphoria</span>
+      </div>
+      <p class="sf-dates">Bookings for the 2026 season are now open.</p>
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <button class="btn-primary" onclick="navigate('booking')">Book your table</button>
+        <span class="text-link" onclick="navigate('shows')">What to expect →</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SPOTLIGHT ── -->
+  <section id="spotlight">
+    <div class="spotlight-grid">
+      <div class="spotlight-text reveal">
+        <div class="sp-eyebrow">Our Story</div>
+        <h2 class="sp-title">SPOTLIGHT<br><em>on ShowInsight</em></h2>
+        <p class="sp-body">
+          Tucked within the vibrant landscape of Riyadh, ShowInsight is a hidden jewel for those who know where to look. Step through our doors to discover a world where live performance meets exquisite hospitality, offering an experience that transcends the ordinary.
+        </p>
+        <p class="sp-body">
+          Since its debut, visitors from across the Kingdom and the globe have flocked to experience the region's most glamorous entertainment destination — a fusion of exquisite dining, unforgettable performances, and tantalisingly daring cabaret acts.
+        </p>
+        <p class="sp-body">
+          This season, <em style="font-family:var(--font-serif);font-style:italic;color:var(--gold)">Opulent Nights</em> arrives. Four themed worlds, each unfolding as a universe of its own. A night designed to make you surrender to the spectacle.
+        </p>
+        <p class="sp-opening">Bookings for the 2026 season are now open.</p>
+        <span class="sp-cta" onclick="navigate('about')">What to expect →</span>
+      </div>
+      <div class="spotlight-images reveal reveal-d2">
+        <div class="sp-img">
+          <div class="sp-img-inner spi-1">🎭</div>
+        </div>
+        <div class="sp-img">
+          <div class="sp-img-inner spi-2">💃</div>
+        </div>
+        <div class="sp-img">
+          <div class="sp-img-inner spi-3">🎵</div>
+        </div>
+        <div class="sp-img">
+          <div class="sp-img-inner spi-4">🎧</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PRIVATE EVENTS ── -->
+  <section id="private-events">
+    <div class="pe-bg"></div>
+    <div class="pe-visual">
+      <div class="pe-visual-inner">🎪</div>
+    </div>
+    <div class="pe-content reveal">
+      <div class="pe-eyebrow">Exclusive Occasions</div>
+      <h2 class="pe-title">PRIVATE<br>EVENTS</h2>
+      <p class="pe-body">
+        ShowInsight sets the stage for exclusive, exciting, and utterly unique evenings. Whether you're interested in hiring our space for a corporate event, a special occasion, or an unforgettable celebration, we'd love to help. Our team will work with you to create an extra-special night that you and your guests will never forget.
+      </p>
+      <span class="text-link" onclick="navigate('booking')">Make an Enquiry →</span>
+    </div>
+  </section>
+
+  <!-- ── GALLERY ROW 1 ── -->
+  <div class="gallery-row reveal">
+    <div class="gc"><div class="gc-inner gc-1">🎭</div><div class="gc-overlay"></div></div>
+    <div class="gc"><div class="gc-inner gc-2">💃</div><div class="gc-overlay"></div></div>
+    <div class="gc"><div class="gc-inner gc-3">🎵</div><div class="gc-overlay"></div></div>
+    <div class="gc"><div class="gc-inner gc-4">🎪</div><div class="gc-overlay"></div></div>
+  </div>
+
+  <!-- ── MEET THE STARS ── -->
+  <section id="meet-stars">
+    <div class="stars-header reveal">
+      <div>
+        <div class="section-eyebrow">Elite Roster</div>
+        <div class="section-title">MEET THE<br><em>Stars</em></div>
+      </div>
+      <span class="text-link" onclick="navigate('performers')">View All Performers →</span>
+    </div>
+    <div class="stars-grid">
+      <div class="star-card reveal reveal-d1">
+        <div class="star-bg sb-1">🎧</div>
+        <div class="star-overlay"></div>
+        <div class="star-price-tag">From $1,200</div>
+        <div class="star-info">
+          <div class="star-type">DJ / Producer</div>
+          <div class="star-name">DJ NOIR</div>
+          <div class="star-rate">★★★★★ &nbsp;5.0 · 48 events</div>
+          <div class="star-cta">→ View Profile &amp; Book</div>
+        </div>
+      </div>
+      <div class="star-card reveal reveal-d2">
+        <div class="star-bg sb-2">💃</div>
+        <div class="star-overlay"></div>
+        <div class="star-price-tag">From $800</div>
+        <div class="star-info">
+          <div class="star-type">Contemporary Dancer</div>
+          <div class="star-name">ARIA CHEN</div>
+          <div class="star-rate">★★★★★ &nbsp;4.9 · 32 events</div>
+          <div class="star-cta">→ View Profile &amp; Book</div>
+        </div>
+      </div>
+      <div class="star-card reveal reveal-d3">
+        <div class="star-bg sb-3">🎻</div>
+        <div class="star-overlay"></div>
+        <div class="star-price-tag">From $950</div>
+        <div class="star-info">
+          <div class="star-type">Violinist</div>
+          <div class="star-name">LEO STRAVE</div>
+          <div class="star-rate">★★★★★ &nbsp;5.0 · 27 events</div>
+          <div class="star-cta">→ View Profile &amp; Book</div>
+        </div>
+      </div>
+      <div class="star-card reveal reveal-d4">
+        <div class="star-bg sb-4">🎤</div>
+        <div class="star-overlay"></div>
+        <div class="star-price-tag">From $1,500</div>
+        <div class="star-info">
+          <div class="star-type">Jazz Vocalist</div>
+          <div class="star-name">MAYA SOLIS</div>
+          <div class="star-rate">★★★★☆ &nbsp;4.8 · 61 events</div>
+          <div class="star-cta">→ View Profile &amp; Book</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── INSIDER LIST ── -->
+  <section id="insider">
+    <div class="reveal">
+      <div class="insider-eyebrow">Stay Connected</div>
+      <h2 class="insider-title">JOIN THE SHOWINSIGHT<br>INSIDER LIST</h2>
+      <p class="insider-desc">
+        Discover what's taking shape at ShowInsight and stay connected to everything yet to come…
+      </p>
+      <p class="insider-desc">
+        From upcoming shows and new productions to the moments that define the season, this is how you stay in tune with what's happening ahead of the rest.
+      </p>
+      <p class="insider-tagline">Carefully curated… continuously evolving… unmistakably ShowInsight.</p>
+    </div>
+    <div class="reveal reveal-d2">
+      <form class="insider-form" onsubmit="handleInsider(event)">
+        <input type="text" class="ins-input" placeholder="First name">
+        <input type="email" class="ins-input" placeholder="Email address">
+        <button type="submit" class="btn-primary" style="width:100%">Join our Insider List</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ── GALLERY ROW 2 ── -->
+  <div class="gallery-row reveal">
+    <div class="gc"><div class="gc-inner gc-5">🎸</div><div class="gc-overlay"></div></div>
+    <div class="gc"><div class="gc-inner gc-6">🥂</div><div class="gc-overlay"></div></div>
+    <div class="gc"><div class="gc-inner gc-7">🎤</div><div class="gc-overlay"></div></div>
+    <div class="gc"><div class="gc-inner gc-8">🎹</div><div class="gc-overlay"></div></div>
+  </div>
+
+  <!-- ── FAQ ── -->
+  <section id="faq">
+    <div class="faq-header reveal">
+      <div>
+        <div class="section-eyebrow">Frequently Asked</div>
+        <div class="section-title">FAQ</div>
+      </div>
+      <span class="text-link" onclick="navigate('about')">View All →</span>
+    </div>
+    <div class="faq-list reveal">
+      <div class="faq-item open">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          What is the ShowInsight experience?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-a">ShowInsight is a charming and sensual yet modern interpretation of a cabaret show, featuring world-class dancers, musicians, vocalists, and DJs in an atmosphere of pure gold. The night evolves into a club from 12:30am onwards, featuring resident and guest DJs from around the world.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          What happens after the show?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-a">Club operation begins after the closing of the show (approximately 12:30am). Tables are transferred to our specially designed area in front of and adjacent to the DJ booth. Our resident DJs perform nightly, with scheduled guest DJs throughout the season.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          What is the dress code?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-a">ShowInsight welcomes chic evening style with an elegant finish. Guests are encouraged to dress in a way that reflects the energy, sophistication, and atmosphere of the venue. Casual attire, sportswear, and overly informal outfits are not permitted. Admission remains at the discretion of the door team and management.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          What packages do you offer?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-a">We offer Bronze (from $2,500), Silver (from $6,500), and Gold (from $15,000) packages, as well as fully bespoke arrangements for those requiring something unique. All packages include a dedicated event manager and pre-event consultation. Contact our team for a personalised quote.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          How do I book a private event?
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-a">Simply submit a booking request through our Reservations page and our events team will reach out within 24 hours with a tailored proposal. There is no commitment until you are completely happy with the plan. We handle everything from performer selection to full production.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── NEWSLETTER FORM ── -->
+  <section id="newsletter-form-section">
+    <div class="nf-grid reveal">
+      <div class="nf-left">
+        <div class="nf-eyebrow">Exclusive Offers &amp; Latest News</div>
+        <h2 class="nf-title">STAY IN<br>THE KNOW</h2>
+        <p class="nf-sub">Which experiences would you like to hear about?</p>
+        <div class="nf-options-label">Select your interests</div>
+        <div class="nf-options">
+          <button class="nf-opt selected" onclick="toggleOpt(this)">All</button>
+          <button class="nf-opt" onclick="toggleOpt(this)">Shows</button>
+          <button class="nf-opt" onclick="toggleOpt(this)">Performers</button>
+          <button class="nf-opt" onclick="toggleOpt(this)">Packages</button>
+          <button class="nf-opt" onclick="toggleOpt(this)">Private Events</button>
+        </div>
+      </div>
+      <div class="nf-right">
+        <form onsubmit="handleNewsletter(event)">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div class="nf-row">
+              <input type="text" class="nf-input" placeholder="First name">
+              <input type="text" class="nf-input" placeholder="Last name">
+            </div>
+            <input type="email" class="nf-input" placeholder="Email address">
+            <div class="nf-consent">
+              <input type="checkbox" id="privacy" required>
+              <label for="privacy">I agree to the <a href="#">Privacy Policy</a> and consent to receiving updates from ShowInsight.</label>
+            </div>
+            <p class="nf-note">This site is protected by reCAPTCHA and Google privacy and terms apply.</p>
+            <button type="submit" class="btn-primary" style="width:100%">Subscribe</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <div class="footer-grid reveal">
+      <div class="footer-brand">
+        <div class="footer-logo">SHOW<span>INSIGHT</span></div>
+        <p class="footer-tagline">Curating extraordinary entertainment experiences across Saudi Arabia and the wider Middle East.</p>
+      </div>
+      <div>
+        <div class="footer-col-title">Navigate</div>
+        <ul class="footer-links">
+          <li><a onclick="navigate('home')">Discover</a></li>
+          <li><a onclick="navigate('shows')">Shows</a></li>
+          <li><a onclick="navigate('performers')">Meet The Stars</a></li>
+          <li><a onclick="navigate('packages')">Packages</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Company</div>
+        <ul class="footer-links">
+          <li><a onclick="navigate('about')">The Experience</a></li>
+          <li><a onclick="navigate('booking')">Reservations</a></li>
+          <li><a onclick="navigate('booking')">Private Events</a></li>
+          <li><a onclick="navigate('booking')">Reach Us</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Contact</div>
+        <ul class="footer-links">
+          <li><a>hello@showinsight.com</a></li>
+          <li><a>+966 11 234 5678</a></li>
+          <li><a>Riyadh, Saudi Arabia</a></li>
+        </ul>
+      </div>
+    </div>
+    <hr class="footer-hr">
+    <div class="footer-bottom">
+      <div class="footer-legal">
+        <a>Terms &amp; Conditions</a>
+        <a>Privacy Policy</a>
+        <a>Cookie Policy</a>
+      </div>
+      <div class="footer-locations-row">
+        <span class="footer-loc active">Riyadh</span>
+        <span class="footer-loc">Jeddah</span>
+        <span class="footer-loc">Dubai</span>
+      </div>
+      <div class="footer-social">
+        <div class="social-btn">𝕏</div>
+        <div class="social-btn">in</div>
+        <div class="social-btn">◎</div>
+      </div>
+    </div>
+  </footer>
+
+</div><!-- /page-home -->
+
+
+<!-- ═══════════════════════════════════════════════
+     PERFORMERS PAGE
+═══════════════════════════════════════════════ -->
+<div class="page" id="page-performers">
+  <div class="inner-page-top"></div>
+  <div class="inner-page-section" style="background:var(--black)">
+    <div class="inner-page-header">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:24px">
+        <div>
+          <div class="section-eyebrow">Elite Roster</div>
+          <div class="section-title">MEET THE<br><em>Stars</em></div>
+        </div>
+        <div class="filter-row">
+          <button class="filter-btn active" onclick="filterPerformers(this,'all')">All</button>
+          <button class="filter-btn" onclick="filterPerformers(this,'dj')">DJs</button>
+          <button class="filter-btn" onclick="filterPerformers(this,'dancer')">Dancers</button>
+          <button class="filter-btn" onclick="filterPerformers(this,'musician')">Musicians</button>
+          <button class="filter-btn" onclick="filterPerformers(this,'vocalist')">Vocalists</button>
+        </div>
+      </div>
+    </div>
+    <div class="performers-grid" id="performersGrid">
+      <div class="performer-card" data-type="dj">
+        <div class="performer-portrait p1">🎧</div>
+        <div class="performer-overlay"></div>
+        <div class="performer-price">From $1,200</div>
+        <div class="performer-info">
+          <div class="performer-type">DJ / Producer</div>
+          <div class="performer-name">DJ NOIR</div>
+          <div class="performer-rating"><span class="stars">★★★★★</span> 5.0 (48 events)</div>
+          <div class="performer-cta">→ View Profile &amp; Book</div>
+        </div>
+      </div>
+      <div class="performer-card" data-type="dancer">
+        <div class="performer-portrait p2">💃</div>
+        <div class="performer-overlay"></div>
+        <div class="performer-price">From $800</div>
+        <div class="performer-info">
+          <div class="performer-type">Contemporary Dancer</div>
+          <div class="performer-name">ARIA CHEN</div>
+          <div class="performer-rating"><span class="stars">★★★★★</span> 4.9 (32 events)</div>
+          <div class="performer-cta">→ View Profile &amp; Book</div>
+        </div>
+      </div>
+      <div class="performer-card" data-type="musician">
+        <div class="performer-portrait p3">🎻</div>
+        <div class="performer-overlay"></div>
+        <div class="performer-price">From $950</div>
+        <div class="performer-info">
+          <div class="performer-type">Violinist</div>
+          <div class="performer-name">LEO STRAVE</div>
+          <div class="performer-rating"><span class="stars">★★★★★</span> 5.0 (27 events)</div>
+          <div class="performer-cta">→ View Profile &amp; Book</div>
+        </div>
+      </div>
+      <div class="performer-card" data-type="vocalist">
+        <div class="performer-portrait p4">🎤</div>
+        <div class="performer-overlay"></div>
+        <div class="performer-price">From $1,500</div>
+        <div class="performer-info">
+          <div class="performer-type">Jazz Vocalist</div>
+          <div class="performer-name">MAYA SOLIS</div>
+          <div class="performer-rating"><span class="stars">★★★★☆</span> 4.8 (61 events)</div>
+          <div class="performer-cta">→ View Profile &amp; Book</div>
+        </div>
+      </div>
+      <div class="performer-card" data-type="dj">
+        <div class="performer-portrait" style="background:linear-gradient(160deg,#001a10,#003520,#001a0d)">🎛️</div>
+        <div class="performer-overlay"></div>
+        <div class="performer-price">From $1,400</div>
+        <div class="performer-info">
+          <div class="performer-type">DJ / Live Sets</div>
+          <div class="performer-name">ECHO MAX</div>
+          <div class="performer-rating"><span class="stars">★★★★★</span> 5.0 (39 events)</div>
+          <div class="performer-cta">→ View Profile &amp; Book</div>
+        </div>
+      </div>
+      <div class="performer-card" data-type="dancer">
+        <div class="performer-portrait" style="background:linear-gradient(160deg,#1a1000,#352000,#1a1000)">🕺</div>
+        <div class="performer-overlay"></div>
+        <div class="performer-price">From $700</div>
+        <div class="performer-info">
+          <div class="performer-type">Latin Dancer</div>
+          <div class="performer-name">CARLOS VEGA</div>
+          <div class="performer-rating"><span class="stars">★★★★★</span> 4.9 (55 events)</div>
+          <div class="performer-cta">→ View Profile &amp; Book</div>
+        </div>
+      </div>
+      <div class="performer-card" data-type="musician">
+        <div class="performer-portrait" style="background:linear-gradient(160deg,#001515,#002a2a,#001515)">🎷</div>
+        <div class="performer-overlay"></div>
+        <div class="performer-price">From $880</div>
+        <div class="performer-info">
+          <div class="performer-type">Saxophonist</div>
+          <div class="performer-name">JADE MONROE</div>
+          <div class="performer-rating"><span class="stars">★★★★★</span> 5.0 (22 events)</div>
+          <div class="performer-cta">→ View Profile &amp; Book</div>
+        </div>
+      </div>
+      <div class="performer-card" data-type="vocalist">
+        <div class="performer-portrait" style="background:linear-gradient(160deg,#150010,#2a0020,#150010)">🎵</div>
+        <div class="performer-overlay"></div>
+        <div class="performer-price">From $1,800</div>
+        <div class="performer-info">
+          <div class="performer-type">Opera Vocalist</div>
+          <div class="performer-name">ELENA VOSS</div>
+          <div class="performer-rating"><span class="stars">★★★★★</span> 5.0 (18 events)</div>
+          <div class="performer-cta">→ View Profile &amp; Book</div>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:56px">
+      <button class="btn-primary" onclick="navigate('booking')">Book a Performer →</button>
+    </div>
+  </div>
+  <footer style="background:var(--dark);border-top:1px solid rgba(255,255,255,0.06);padding:28px 8vw;text-align:center;font-size:11px;color:var(--text-muted)">
+    © 2026 ShowInsight · <span style="cursor:pointer;color:var(--gold)" onclick="navigate('home')">← Back to Discover</span>
+  </footer>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     SHOWS PAGE
+═══════════════════════════════════════════════ -->
+<div class="page" id="page-shows">
+  <div class="inner-page-top"></div>
+  <div class="inner-page-section" style="background:var(--black)">
+    <div class="inner-page-header">
+      <div class="section-eyebrow">Current &amp; Upcoming</div>
+      <div class="section-title">SHOWS &amp;<br><em>Events</em></div>
+      <p class="section-desc">Experience world-class performances curated for discerning audiences. Each show is a masterclass in artistry and atmosphere.</p>
+    </div>
+    <div class="shows-feature-list">
+      <div class="show-feature-card">
+        <div class="sfc-thumb" style="background:linear-gradient(135deg,#1a0a00,#3d1f00)">🎭</div>
+        <div class="sfc-body">
+          <div class="sfc-type">★ Headline — Every Friday</div>
+          <div class="sfc-title">THE GOLDEN HOUR</div>
+          <p class="sfc-desc">Our signature cabaret evening featuring world-class dancers, stunning acrobatics, and live vocals in an atmosphere of pure gold. Doors open at 8PM, show begins 9PM sharp.</p>
+          <div class="sfc-meta">
+            <span>🕘 9:00 PM – 12:00 AM</span>
+            <span>📍 Main Stage</span>
+            <span class="sfc-price">From $150/person</span>
+          </div>
+          <button class="btn-primary" onclick="navigate('booking')">Reserve Your Seats</button>
+        </div>
+      </div>
+      <div class="show-feature-card">
+        <div class="sfc-thumb" style="background:linear-gradient(135deg,#001830,#002a4d)">🎸</div>
+        <div class="sfc-body">
+          <div class="sfc-type">Live Music — Saturdays</div>
+          <div class="sfc-title">ELECTRIC SESSIONS</div>
+          <p class="sfc-desc">Live band performances spanning jazz, soul, and contemporary. Featuring rotating headline acts each week. The finest live music experience in the region.</p>
+          <div class="sfc-meta">
+            <span>🕘 8:00 PM – 11:30 PM</span>
+            <span>📍 Main Stage</span>
+            <span class="sfc-price">From $80/person</span>
+          </div>
+          <button class="btn-secondary" onclick="navigate('booking')">Book →</button>
+        </div>
+      </div>
+      <div class="show-feature-card">
+        <div class="sfc-thumb" style="background:linear-gradient(135deg,#0d0010,#1a0025)">🎧</div>
+        <div class="sfc-body">
+          <div class="sfc-type">DJ Set — Thursdays</div>
+          <div class="sfc-title">MIDNIGHT PULSE</div>
+          <p class="sfc-desc">Curated electronic sets from our resident DJs and exclusive guest appearances. The night starts after midnight and runs until the early hours.</p>
+          <div class="sfc-meta">
+            <span>🕘 10:00 PM – 3:00 AM</span>
+            <span>📍 Club Floor</span>
+            <span class="sfc-price">From $60/person</span>
+          </div>
+          <button class="btn-secondary" onclick="navigate('booking')">Book →</button>
+        </div>
+      </div>
+      <div class="show-feature-card">
+        <div class="sfc-thumb" style="background:linear-gradient(135deg,#001a0d,#003520)">🥂</div>
+        <div class="sfc-body">
+          <div class="sfc-type">Special Event — Monthly</div>
+          <div class="sfc-title">GALA NIGHTS</div>
+          <p class="sfc-desc">Our exclusive monthly gala features multiple performers, fine dining pairings, and an atmosphere of pure theatre. The most spectacular evening of each month.</p>
+          <div class="sfc-meta">
+            <span>🕘 7:00 PM – 1:00 AM</span>
+            <span>📍 Full Venue</span>
+            <span class="sfc-price">From $250/person</span>
+          </div>
+          <button class="btn-secondary" onclick="navigate('booking')">Book →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer style="background:var(--dark);border-top:1px solid rgba(255,255,255,0.06);padding:28px 8vw;text-align:center;font-size:11px;color:var(--text-muted)">
+    © 2026 ShowInsight · <span style="cursor:pointer;color:var(--gold)" onclick="navigate('home')">← Back to Discover</span>
+  </footer>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     PACKAGES PAGE
+═══════════════════════════════════════════════ -->
+<div class="page" id="page-packages">
+  <div class="inner-page-top" style="background:var(--charcoal)"></div>
+  <div class="inner-page-section" style="background:var(--charcoal)">
+    <div class="inner-page-header">
+      <div class="section-eyebrow">Pricing &amp; Packages</div>
+      <div class="section-title">CHOOSE YOUR<br><em>Experience</em></div>
+      <p class="section-desc">Every package is fully customizable. All prices are starting from — our team will work with your specific requirements and budget.</p>
+    </div>
+    <div class="packages-grid">
+      <div class="package-card">
+        <div class="pkg-tier">Package 01</div>
+        <div class="pkg-name">BRONZE</div>
+        <div class="pkg-price"><span class="pkg-amount">$2,500</span><span class="pkg-suffix">/ event</span></div>
+        <div class="pkg-divider"></div>
+        <ul class="pkg-includes">
+          <li>1 Solo Artist (2-hour set)</li>
+          <li>Basic sound system</li>
+          <li>Pre-event consultation</li>
+          <li>Standard lighting rig</li>
+          <li>Dedicated event manager</li>
+          <li class="no">Multi-performer lineup</li>
+          <li class="no">Custom theming</li>
+        </ul>
+        <button class="pkg-btn" onclick="navigate('booking')">Get Started</button>
+      </div>
+      <div class="package-card featured">
+        <div class="pkg-tier">Package 02</div>
+        <div class="pkg-name">SILVER</div>
+        <div class="pkg-price"><span class="pkg-amount">$6,500</span><span class="pkg-suffix">/ event</span></div>
+        <div class="pkg-divider"></div>
+        <ul class="pkg-includes">
+          <li class="hl">3 Performers (DJ + Dancers + Vocalist)</li>
+          <li class="hl">Professional sound &amp; lighting</li>
+          <li class="hl">Full event coordination</li>
+          <li class="hl">Custom set design elements</li>
+          <li class="hl">Choreography consultation</li>
+          <li class="hl">Post-event photography</li>
+          <li class="no">Full production crew</li>
+        </ul>
+        <button class="pkg-btn" onclick="navigate('booking')">Book Silver</button>
+      </div>
+      <div class="package-card">
+        <div class="pkg-tier">Package 03</div>
+        <div class="pkg-name">GOLD</div>
+        <div class="pkg-price"><span class="pkg-amount">$15,000</span><span class="pkg-suffix">/ event</span></div>
+        <div class="pkg-divider"></div>
+        <ul class="pkg-includes">
+          <li class="hl">Full performer ensemble (6+ artists)</li>
+          <li class="hl">Complete production crew</li>
+          <li class="hl">Custom stage design &amp; theming</li>
+          <li class="hl">Pyrotechnics &amp; special effects</li>
+          <li class="hl">Live streaming setup</li>
+          <li class="hl">Professional photography &amp; video</li>
+          <li class="hl">Celebrity guest performer option</li>
+        </ul>
+        <button class="pkg-btn" onclick="navigate('booking')">Go Full Gold</button>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:48px;padding:36px;background:var(--gray);border:1px solid var(--border)">
+      <p style="font-family:var(--font-serif);font-size:22px;font-style:italic;color:var(--text-dim);margin-bottom:20px">Need something bespoke? Every great event starts with a conversation.</p>
+      <button class="btn-primary" onclick="navigate('booking')">Request Custom Quote</button>
+    </div>
+  </div>
+  <footer style="background:var(--dark);border-top:1px solid rgba(255,255,255,0.06);padding:28px 8vw;text-align:center;font-size:11px;color:var(--text-muted)">
+    © 2026 ShowInsight · <span style="cursor:pointer;color:var(--gold)" onclick="navigate('home')">← Back to Discover</span>
+  </footer>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     THE EXPERIENCE / ABOUT PAGE
+═══════════════════════════════════════════════ -->
+<div class="page" id="page-about">
+  <div class="inner-page-top"></div>
+  <div class="inner-page-section" style="background:var(--black)">
+    <div class="about-grid">
+      <div class="about-visual">
+        <div class="about-main-img">🎪</div>
+        <div class="about-accent">
+          <div class="about-accent-num">10+</div>
+          <div class="about-accent-label">Years of Excellence</div>
+        </div>
+      </div>
+      <div class="about-content">
+        <div class="section-eyebrow">Our Story</div>
+        <h2>SPOTLIGHT<br><em>on Craft</em></h2>
+        <p>ShowInsight was born from a singular conviction: that live entertainment, when done right, transcends the moment and becomes a memory that lasts a lifetime.</p>
+        <p>Founded in Riyadh, we've spent over a decade assembling the finest roster of performers across the Middle East and beyond — DJs, dancers, musicians, vocalists, and full production crews who share our obsession with excellence.</p>
+        <p>Whether you're planning an intimate private gathering or a large-scale corporate spectacular, our team brings the same relentless attention to detail to every brief.</p>
+        <div class="about-pillars">
+          <div class="pillar"><div class="pillar-title">VISION</div><div class="pillar-text">Redefining what entertainment means in the modern era</div></div>
+          <div class="pillar"><div class="pillar-title">TALENT</div><div class="pillar-text">Only the top 5% of auditioned performers join our roster</div></div>
+          <div class="pillar"><div class="pillar-title">CRAFT</div><div class="pillar-text">Every performance is choreographed, rehearsed, and perfected</div></div>
+          <div class="pillar"><div class="pillar-title">SERVICE</div><div class="pillar-text">Dedicated account management from brief to curtain call</div></div>
+        </div>
+        <div style="margin-top:40px">
+          <button class="btn-primary" onclick="navigate('booking')">Start Planning Your Event</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer style="background:var(--dark);border-top:1px solid rgba(255,255,255,0.06);padding:28px 8vw;text-align:center;font-size:11px;color:var(--text-muted)">
+    © 2026 ShowInsight · <span style="cursor:pointer;color:var(--gold)" onclick="navigate('home')">← Back to Discover</span>
+  </footer>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     BOOKING / RESERVATIONS PAGE
+═══════════════════════════════════════════════ -->
+<div class="page" id="page-booking">
+  <div class="inner-page-top" style="background:var(--charcoal)"></div>
+  <div class="inner-page-section" style="background:var(--charcoal)">
+    <div class="inner-page-header">
+      <div class="section-eyebrow">Reserve Your Experience</div>
+      <div class="section-title">RESERVATIONS</div>
+    </div>
+    <div class="booking-grid">
+      <div class="booking-info">
+        <h3>Your vision, our execution.</h3>
+        <p>Fill in the form and our team will reach out within 24 hours with a tailored proposal. There's no commitment until you're completely happy with the plan.</p>
+        <ul class="booking-features">
+          <li>Free initial consultation &amp; custom quote</li>
+          <li>Dedicated event manager assigned</li>
+          <li>Flexible date changes (72h notice)</li>
+          <li>Full transparency on pricing — no hidden fees</li>
+          <li>Post-event follow-up &amp; feedback session</li>
+        </ul>
+        <div style="margin-top:40px;padding:24px;background:var(--gold-dim);border:1px solid var(--border)">
+          <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:10px">Contact Directly</div>
+          <div style="font-size:15px;color:var(--text-dim);line-height:1.8">hello@showinsight.com<br>+966 11 234 5678<br><em style="font-family:var(--font-serif);font-style:italic;font-size:14px">Riyadh, Saudi Arabia</em></div>
+        </div>
+      </div>
+      <div>
+        <form class="booking-form" onsubmit="handleBooking(event)">
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">First Name</label><input type="text" class="form-input" placeholder="Ahmad"></div>
+            <div class="form-group"><label class="form-label">Last Name</label><input type="text" class="form-input" placeholder="Al-Khalid"></div>
+          </div>
+          <div class="form-group"><label class="form-label">Email Address</label><input type="email" class="form-input" placeholder="ahmad@company.com"></div>
+          <div class="form-group"><label class="form-label">Phone Number</label><input type="tel" class="form-input" placeholder="+966 5X XXX XXXX"></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Event Date</label><input type="date" class="form-input" id="eventDate" onchange="calcPrice()"></div>
+            <div class="form-group"><label class="form-label">Event Type</label>
+              <select class="form-select" onchange="calcPrice()">
+                <option value="">Select type...</option>
+                <option>Corporate Event</option>
+                <option>Private Party</option>
+                <option>Wedding</option>
+                <option>Gala / Charity</option>
+                <option>Product Launch</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group"><label class="form-label">Package</label>
+            <select class="form-select" id="packageSelect" onchange="calcPrice()">
+              <option value="">Select package...</option>
+              <option value="2500">Bronze — from $2,500</option>
+              <option value="6500">Silver — from $6,500</option>
+              <option value="15000">Gold — from $15,000</option>
+              <option value="0">Custom — Request quote</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Performer Type(s)</label>
+            <select class="form-select">
+              <option>DJ + Dancers (most popular)</option>
+              <option>Live Band</option>
+              <option>Vocalist + Band</option>
+              <option>Full Cabaret Production</option>
+              <option>Custom mix — discuss with team</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Event Location / Venue</label><input type="text" class="form-input" placeholder="Venue name, city"></div>
+          <div class="form-group"><label class="form-label">Additional Notes</label><textarea class="form-textarea" placeholder="Tell us about your vision, expected guest count, theme, special requirements..."></textarea></div>
+          <div class="price-preview">
+            <div>
+              <div class="price-preview-label">Estimated Starting From</div>
+              <div style="font-size:11px;color:var(--text-muted)">Final quote provided by our team</div>
+            </div>
+            <div class="price-preview-amount" id="pricePreview">$—</div>
+          </div>
+          <button type="submit" class="btn-primary" style="width:100%;padding:18px">Submit Booking Request →</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <footer style="background:var(--dark);border-top:1px solid rgba(255,255,255,0.06);padding:28px 8vw;text-align:center;font-size:11px;color:var(--text-muted)">
+    © 2026 ShowInsight · <span style="cursor:pointer;color:var(--gold)" onclick="navigate('home')">← Back to Discover</span>
+  </footer>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     ADMIN DASHBOARD
+═══════════════════════════════════════════════ -->
+<div id="admin-panel">
+  <div class="admin-sidebar">
+    <div class="admin-logo">SHOW<span>INSIGHT</span><small>Admin Dashboard</small></div>
+    <nav class="admin-nav">
+      <div class="admin-nav-section">Overview</div>
+      <div class="admin-nav-item active" onclick="adminNav(this,'overview')"><span class="admin-nav-icon">◈</span> Dashboard</div>
+      <div class="admin-nav-section">Content</div>
+      <div class="admin-nav-item" onclick="adminNav(this,'performers')"><span class="admin-nav-icon">★</span> Performers</div>
+      <div class="admin-nav-item" onclick="adminNav(this,'shows')"><span class="admin-nav-icon">🎭</span> Shows</div>
+      <div class="admin-nav-item" onclick="adminNav(this,'packages-admin')"><span class="admin-nav-icon">◇</span> Packages</div>
+      <div class="admin-nav-section">Operations</div>
+      <div class="admin-nav-item" onclick="adminNav(this,'bookings')"><span class="admin-nav-icon">📋</span> Bookings</div>
+      <div class="admin-nav-item" onclick="adminNav(this,'content')"><span class="admin-nav-icon">✎</span> Content / CMS</div>
+      <div class="admin-nav-item" onclick="adminNav(this,'newsletter')"><span class="admin-nav-icon">✉</span> Newsletter</div>
+    </nav>
+    <div class="admin-close" onclick="closeAdmin()">← Return to Website</div>
+  </div>
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <h1 id="adminTitle">DASHBOARD</h1>
+      <div class="admin-topbar-actions">
+        <button class="admin-btn-secondary" id="adminSecBtn" style="display:none">Export CSV</button>
+        <button class="admin-btn" id="adminPrimaryBtn" onclick="showToast('Feature coming soon!')">+ Add New</button>
+      </div>
+    </div>
+    <div class="admin-content">
+      <!-- OVERVIEW -->
+      <div class="admin-panel-section active" id="admin-overview">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-card-label">Total Bookings</div><div class="stat-card-value">87</div><div class="stat-card-change">↑ 12% this month</div></div>
+          <div class="stat-card"><div class="stat-card-label">Active Performers</div><div class="stat-card-value">48</div><div class="stat-card-change">↑ 3 new this week</div></div>
+          <div class="stat-card"><div class="stat-card-label">Upcoming Shows</div><div class="stat-card-value">12</div><div class="stat-card-change">Next: Friday 9PM</div></div>
+          <div class="stat-card"><div class="stat-card-label">Revenue (Month)</div><div class="stat-card-value">$142K</div><div class="stat-card-change">↑ 24% vs last month</div></div>
+        </div>
+        <div class="admin-table-wrap">
+          <div class="admin-table-header">
+            <div class="admin-table-title">Recent Bookings</div>
+            <input class="admin-search" placeholder="Search bookings...">
+          </div>
+          <table>
+            <thead><tr><th>Client</th><th>Event Type</th><th>Date</th><th>Package</th><th>Value</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td>Ahmad Al-Khalid</td><td>Corporate Gala</td><td>Jun 15, 2026</td><td>Gold</td><td>$15,000</td><td><span class="status-badge badge-confirmed">Confirmed</span></td><td><button class="table-action">View</button></td></tr>
+              <tr><td>Sarah Mitchell</td><td>Private Party</td><td>Jun 18, 2026</td><td>Silver</td><td>$8,200</td><td><span class="status-badge badge-pending">Pending</span></td><td><button class="table-action">View</button></td></tr>
+              <tr><td>Mohammed Al-Faisal</td><td>Wedding</td><td>Jun 22, 2026</td><td>Gold</td><td>$22,000</td><td><span class="status-badge badge-confirmed">Confirmed</span></td><td><button class="table-action">View</button></td></tr>
+              <tr><td>Jennifer Clarke</td><td>Product Launch</td><td>Jun 28, 2026</td><td>Bronze</td><td>$2,800</td><td><span class="status-badge badge-pending">Pending</span></td><td><button class="table-action">View</button></td></tr>
+              <tr><td>Abdullah Al-Rashid</td><td>Charity Gala</td><td>Jul 3, 2026</td><td>Silver</td><td>$7,500</td><td><span class="status-badge badge-confirmed">Confirmed</span></td><td><button class="table-action">View</button></td></tr>
+              <tr><td>Diana Petrova</td><td>Private Party</td><td>May 10, 2026</td><td>Bronze</td><td>$3,100</td><td><span class="status-badge badge-completed">Completed</span></td><td><button class="table-action">View</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <!-- PERFORMERS ADMIN -->
+      <div class="admin-panel-section" id="admin-performers">
+        <div class="admin-table-wrap">
+          <div class="admin-table-header"><div class="admin-table-title">All Performers (48)</div><input class="admin-search" placeholder="Search performers..."></div>
+          <table>
+            <thead><tr><th>Name</th><th>Type</th><th>Base Rate</th><th>Rating</th><th>Events</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr><td>DJ Noir</td><td>DJ / Producer</td><td>$1,200</td><td>★★★★★ 5.0</td><td>48</td><td><span class="status-badge badge-confirmed">Active</span></td><td><button class="table-action">Edit</button> <button class="table-action danger">Remove</button></td></tr>
+              <tr><td>Aria Chen</td><td>Contemporary Dancer</td><td>$800</td><td>★★★★★ 4.9</td><td>32</td><td><span class="status-badge badge-confirmed">Active</span></td><td><button class="table-action">Edit</button> <button class="table-action danger">Remove</button></td></tr>
+              <tr><td>Leo Strave</td><td>Violinist</td><td>$950</td><td>★★★★★ 5.0</td><td>27</td><td><span class="status-badge badge-confirmed">Active</span></td><td><button class="table-action">Edit</button> <button class="table-action danger">Remove</button></td></tr>
+              <tr><td>Maya Solis</td><td>Jazz Vocalist</td><td>$1,500</td><td>★★★★☆ 4.8</td><td>61</td><td><span class="status-badge badge-confirmed">Active</span></td><td><button class="table-action">Edit</button> <button class="table-action danger">Remove</button></td></tr>
+              <tr><td>Echo Max</td><td>DJ / Live Sets</td><td>$1,400</td><td>★★★★★ 5.0</td><td>39</td><td><span class="status-badge badge-confirmed">Active</span></td><td><button class="table-action">Edit</button> <button class="table-action danger">Remove</button></td></tr>
+              <tr><td>Elena Voss</td><td>Opera Vocalist</td><td>$1,800</td><td>★★★★★ 5.0</td><td>18</td><td><span class="status-badge badge-pending">On Leave</span></td><td><button class="table-action">Edit</button> <button class="table-action danger">Remove</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top:24px">
+          <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:16px">Add New Performer</div>
+          <div class="admin-form-grid">
+            <div class="admin-form-group"><label class="admin-form-label">Full Name</label><input type="text" class="admin-form-input" placeholder="Performer name"></div>
+            <div class="admin-form-group"><label class="admin-form-label">Type</label><select class="admin-form-select"><option>DJ / Producer</option><option>Dancer</option><option>Vocalist</option><option>Musician</option></select></div>
+            <div class="admin-form-group"><label class="admin-form-label">Base Rate (USD)</label><input type="number" class="admin-form-input" placeholder="1200"></div>
+            <div class="admin-form-group"><label class="admin-form-label">Contact Email</label><input type="email" class="admin-form-input" placeholder="performer@email.com"></div>
+            <div class="admin-form-group full"><label class="admin-form-label">Bio</label><textarea class="admin-form-textarea" placeholder="Brief bio for public profile..."></textarea></div>
+            <div class="admin-form-group"><label class="admin-form-label">Photo URL</label><input type="text" class="admin-form-input" placeholder="https://..."></div>
+            <div class="admin-form-group"><label class="admin-form-label">Tags (comma separated)</label><input type="text" class="admin-form-input" placeholder="house, techno, latin"></div>
+            <div class="admin-form-actions"><button class="admin-btn-secondary">Clear</button><button class="admin-btn" onclick="showToast('Performer added!')">Save Performer</button></div>
+          </div>
+        </div>
+      </div>
+      <!-- SHOWS ADMIN -->
+      <div class="admin-panel-section" id="admin-shows">
+        <div class="admin-table-wrap">
+          <div class="admin-table-header"><div class="admin-table-title">All Shows</div><input class="admin-search" placeholder="Search shows..."></div>
+          <table>
+            <thead><tr><th>Show Name</th><th>Date</th><th>Performers</th><th>Capacity</th><th>Bookings</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr><td>The Golden Hour</td><td>Every Friday</td><td>5 performers</td><td>120</td><td>98/120</td><td><span class="status-badge badge-confirmed">Active</span></td><td><button class="table-action">Edit</button> <button class="table-action danger">Delete</button></td></tr>
+              <tr><td>Electric Sessions</td><td>Every Saturday</td><td>4 performers</td><td>80</td><td>65/80</td><td><span class="status-badge badge-confirmed">Active</span></td><td><button class="table-action">Edit</button> <button class="table-action danger">Delete</button></td></tr>
+              <tr><td>Midnight Pulse</td><td>Every Thursday</td><td>2 DJs</td><td>200</td><td>140/200</td><td><span class="status-badge badge-confirmed">Active</span></td><td><button class="table-action">Edit</button> <button class="table-action danger">Delete</button></td></tr>
+              <tr><td>June Gala Night</td><td>Jun 30, 2026</td><td>8 performers</td><td>250</td><td>180/250</td><td><span class="status-badge badge-pending">Upcoming</span></td><td><button class="table-action">Edit</button> <button class="table-action danger">Delete</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top:24px">
+          <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:16px">Create New Show</div>
+          <div class="admin-form-grid">
+            <div class="admin-form-group"><label class="admin-form-label">Show Name</label><input type="text" class="admin-form-input" placeholder="The Golden Hour"></div>
+            <div class="admin-form-group"><label class="admin-form-label">Show Type</label><select class="admin-form-select"><option>Cabaret</option><option>Live Music</option><option>DJ Set</option><option>Gala</option></select></div>
+            <div class="admin-form-group"><label class="admin-form-label">Date / Schedule</label><input type="text" class="admin-form-input" placeholder="Every Friday or Jun 30, 2026"></div>
+            <div class="admin-form-group"><label class="admin-form-label">Capacity</label><input type="number" class="admin-form-input" placeholder="120"></div>
+            <div class="admin-form-group"><label class="admin-form-label">Ticket Price</label><input type="number" class="admin-form-input" placeholder="150"></div>
+            <div class="admin-form-group"><label class="admin-form-label">Status</label><select class="admin-form-select"><option>upcoming</option><option>active</option><option>past</option></select></div>
+            <div class="admin-form-group full"><label class="admin-form-label">Description</label><textarea class="admin-form-textarea" placeholder="Show description..."></textarea></div>
+            <div class="admin-form-actions"><button class="admin-btn-secondary">Clear</button><button class="admin-btn" onclick="showToast('Show created!')">Create Show</button></div>
+          </div>
+        </div>
+      </div>
+      <!-- PACKAGES ADMIN -->
+      <div class="admin-panel-section" id="admin-packages-admin">
+        <div class="admin-table-wrap">
+          <div class="admin-table-header"><div class="admin-table-title">Pricing Packages</div></div>
+          <table>
+            <thead><tr><th>Package</th><th>Base Price</th><th>Inclusions</th><th>Active Bookings</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Bronze</strong></td><td>$2,500</td><td>1 performer, 2h set, basic AV</td><td>14</td><td><button class="table-action">Edit Pricing</button></td></tr>
+              <tr><td><strong>Silver</strong> ⭐</td><td>$6,500</td><td>3 performers, full AV, coordination</td><td>38</td><td><button class="table-action">Edit Pricing</button></td></tr>
+              <tr><td><strong>Gold</strong></td><td>$15,000</td><td>6+ performers, full production</td><td>22</td><td><button class="table-action">Edit Pricing</button></td></tr>
+              <tr><td><strong>Custom</strong></td><td>On request</td><td>Fully bespoke</td><td>13</td><td><button class="table-action">Edit</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top:24px;background:var(--charcoal);border:1px solid var(--border);padding:32px;border-radius:2px">
+          <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:20px">Edit Package Pricing</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px">
+            <div class="admin-form-group"><label class="admin-form-label">Bronze Base Price</label><input type="number" class="admin-form-input" value="2500"></div>
+            <div class="admin-form-group"><label class="admin-form-label">Silver Base Price</label><input type="number" class="admin-form-input" value="6500"></div>
+            <div class="admin-form-group"><label class="admin-form-label">Gold Base Price</label><input type="number" class="admin-form-input" value="15000"></div>
+          </div>
+          <div style="margin-top:16px;display:flex;justify-content:flex-end">
+            <button class="admin-btn" onclick="showToast('Pricing updated!')">Update Pricing</button>
+          </div>
+        </div>
+      </div>
+      <!-- BOOKINGS ADMIN -->
+      <div class="admin-panel-section" id="admin-bookings">
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <button class="filter-btn active" onclick="filterBookings(this,'all')">All</button>
+          <button class="filter-btn" onclick="filterBookings(this,'pending')">Pending</button>
+          <button class="filter-btn" onclick="filterBookings(this,'confirmed')">Confirmed</button>
+          <button class="filter-btn" onclick="filterBookings(this,'completed')">Completed</button>
+        </div>
+        <div class="admin-table-wrap">
+          <div class="admin-table-header">
+            <div class="admin-table-title">All Bookings (87)</div>
+            <div style="display:flex;gap:8px"><input class="admin-search" placeholder="Search..."><button class="admin-btn-secondary">Export CSV</button></div>
+          </div>
+          <table>
+            <thead><tr><th>Client</th><th>Event</th><th>Date</th><th>Package</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="bookingsTable">
+              <tr data-status="confirmed"><td>Ahmad Al-Khalid</td><td>Corporate Gala</td><td>Jun 15</td><td>Gold</td><td>$15,000</td><td><span class="status-badge badge-confirmed">Confirmed</span></td><td><button class="table-action">View</button> <button class="table-action" onclick="showToast('Email sent!')">Email</button></td></tr>
+              <tr data-status="pending"><td>Sarah Mitchell</td><td>Private Party</td><td>Jun 18</td><td>Silver</td><td>$8,200</td><td><span class="status-badge badge-pending">Pending</span></td><td><button class="table-action" onclick="showToast('Booking confirmed!')">Confirm</button> <button class="table-action danger">Reject</button></td></tr>
+              <tr data-status="confirmed"><td>Mohammed Al-Faisal</td><td>Wedding</td><td>Jun 22</td><td>Gold</td><td>$22,000</td><td><span class="status-badge badge-confirmed">Confirmed</span></td><td><button class="table-action">View</button> <button class="table-action" onclick="showToast('Email sent!')">Email</button></td></tr>
+              <tr data-status="pending"><td>Jennifer Clarke</td><td>Product Launch</td><td>Jun 28</td><td>Bronze</td><td>$2,800</td><td><span class="status-badge badge-pending">Pending</span></td><td><button class="table-action" onclick="showToast('Booking confirmed!')">Confirm</button> <button class="table-action danger">Reject</button></td></tr>
+              <tr data-status="completed"><td>Diana Petrova</td><td>Private Party</td><td>May 10</td><td>Bronze</td><td>$3,100</td><td><span class="status-badge badge-completed">Completed</span></td><td><button class="table-action">View</button></td></tr>
+              <tr data-status="cancelled"><td>Mark Johnson</td><td>Birthday</td><td>Apr 28</td><td>Silver</td><td>$6,500</td><td><span class="status-badge badge-cancelled">Cancelled</span></td><td><button class="table-action">Archive</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <!-- CONTENT ADMIN -->
+      <div class="admin-panel-section" id="admin-content">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="admin-form-grid" style="height:fit-content">
+            <div class="admin-form-group full"><div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:4px">Hero Section</div></div>
+            <div class="admin-form-group"><label class="admin-form-label">Hero Title</label><input type="text" class="admin-form-input" value="WHERE THE STAGE COMES ALIVE"></div>
+            <div class="admin-form-group"><label class="admin-form-label">Season Show Name</label><input type="text" class="admin-form-input" value="Opulent Nights"></div>
+            <div class="admin-form-group full"><label class="admin-form-label">Hero Description</label><textarea class="admin-form-textarea" style="min-height:80px">Curating extraordinary entertainment for unforgettable events.</textarea></div>
+            <div class="admin-form-actions"><button class="admin-btn" onclick="showToast('Hero updated!')">Save Changes</button></div>
+          </div>
+          <div class="admin-form-grid" style="height:fit-content">
+            <div class="admin-form-group full"><div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:4px">FAQ Management</div></div>
+            <div class="admin-form-group full"><label class="admin-form-label">FAQ Question</label><input type="text" class="admin-form-input" placeholder="Enter question..."></div>
+            <div class="admin-form-group full"><label class="admin-form-label">FAQ Answer</label><textarea class="admin-form-textarea" placeholder="Enter answer..." style="min-height:80px"></textarea></div>
+            <div class="admin-form-actions"><button class="admin-btn" onclick="showToast('FAQ added!')">Add FAQ Item</button></div>
+          </div>
+        </div>
+      </div>
+      <!-- NEWSLETTER ADMIN -->
+      <div class="admin-panel-section" id="admin-newsletter">
+        <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="stat-card"><div class="stat-card-label">Total Subscribers</div><div class="stat-card-value">1,284</div><div class="stat-card-change">↑ 47 this week</div></div>
+          <div class="stat-card"><div class="stat-card-label">Open Rate</div><div class="stat-card-value">68%</div><div class="stat-card-change">↑ Above industry avg</div></div>
+          <div class="stat-card"><div class="stat-card-label">Last Campaign</div><div class="stat-card-value">May 1</div><div class="stat-card-change">342 opens, 128 clicks</div></div>
+        </div>
+        <div class="admin-table-wrap">
+          <div class="admin-table-header"><div class="admin-table-title">Recent Subscribers</div><div style="display:flex;gap:8px"><input class="admin-search" placeholder="Search..."><button class="admin-btn-secondary">Export List</button></div></div>
+          <table>
+            <thead><tr><th>Email</th><th>Subscribed</th><th>Source</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td>a.khalid@gmail.com</td><td>May 14, 2026</td><td>Homepage</td><td><button class="table-action danger">Unsubscribe</button></td></tr>
+              <tr><td>sarah.m@company.com</td><td>May 13, 2026</td><td>Homepage</td><td><button class="table-action danger">Unsubscribe</button></td></tr>
+              <tr><td>m.faisal@business.sa</td><td>May 12, 2026</td><td>Booking form</td><td><button class="table-action danger">Unsubscribe</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top:24px;background:var(--charcoal);border:1px solid var(--border);padding:32px;border-radius:2px">
+          <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:16px">Send Campaign</div>
+          <div class="admin-form-grid">
+            <div class="admin-form-group"><label class="admin-form-label">Subject Line</label><input type="text" class="admin-form-input" placeholder="Email subject..."></div>
+            <div class="admin-form-group"><label class="admin-form-label">Send To</label><select class="admin-form-select"><option>All Subscribers (1,284)</option><option>Recent (last 30 days)</option></select></div>
+            <div class="admin-form-group full"><label class="admin-form-label">Message Body</label><textarea class="admin-form-textarea" placeholder="Email content..." style="min-height:120px"></textarea></div>
+            <div class="admin-form-actions"><button class="admin-btn-secondary">Preview</button><button class="admin-btn" onclick="showToast('Campaign sent to 1,284 subscribers!')">Send Campaign</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="login-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('login-modal')">✕</button>
+    <div class="modal-title">ADMIN<br>ACCESS</div>
+    <p class="modal-sub">Enter your credentials to access the dashboard.</p>
+    <form class="login-form" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-input" placeholder="admin@showinsight.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-input" placeholder="••••••••">
+      </div>
+      <button type="submit" class="btn-primary" style="width:100%;margin-top:8px">Access Dashboard</button>
+    </form>
+    <p style="text-align:center;margin-top:16px;font-size:11px;color:var(--text-muted)">Demo: any email + any password</p>
+  </div>
+</div>
+
+<script>
+  /* ── CURSOR ── */
+  const cursor = document.getElementById('cursor');
+  const cursorRing = document.getElementById('cursorRing');
+  let mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove',e=>{ mx=e.clientX; my=e.clientY; cursor.style.left=mx+'px'; cursor.style.top=my+'px'; });
+  (function animRing(){ rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12; cursorRing.style.left=rx+'px'; cursorRing.style.top=ry+'px'; requestAnimationFrame(animRing); })();
+  document.querySelectorAll('a,button,.discover-card,.star-card,.performer-card,.package-card,.show-feature-card,.gc,.sp-img,.admin-nav-item,.nav-sec-link,.faq-q,.dc-link,.text-link,.sp-cta').forEach(el=>{
+    el.addEventListener('mouseenter',()=>{ cursorRing.style.transform='translate(-50%,-50%) scale(1.9)'; cursorRing.style.background='rgba(212,175,55,0.07)'; });
+    el.addEventListener('mouseleave',()=>{ cursorRing.style.transform='translate(-50%,-50%) scale(1)'; cursorRing.style.background=''; });
+  });
+
+  /* ── NAVIGATION ── */
+  const pageMap = {
+    home:'home', performers:'performers', shows:'shows',
+    packages:'packages', about:'about', booking:'booking'
+  };
+  const secMap = {
+    home:'sec-home', performers:'sec-performers', shows:'sec-shows',
+    packages:'sec-packages', about:'sec-about', booking:'sec-booking'
+  };
+
+  function navigate(page){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    const el = document.getElementById('page-'+page);
+    if(el){ el.classList.add('active'); }
+    // secondary nav active
+    document.querySelectorAll('.nav-sec-link').forEach(l=>l.classList.remove('active'));
+    const secEl = document.getElementById(secMap[page]);
+    if(secEl) secEl.classList.add('active');
+    window.scrollTo({top:0,behavior:'instant'});
+    setTimeout(triggerReveal, 80);
+  }
+
+  /* ── SCROLL REVEAL ── */
+  function triggerReveal(){
+    document.querySelectorAll('.reveal:not(.visible)').forEach(el=>{
+      const r = el.getBoundingClientRect();
+      if(r.top < window.innerHeight*0.9) el.classList.add('visible');
+    });
+  }
+  window.addEventListener('scroll', triggerReveal, {passive:true});
+  triggerReveal();
+
+  /* ── FAQ ACCORDION ── */
+  function toggleFaq(btn){
+    const item = btn.closest('.faq-item');
+    const wasOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(i=>i.classList.remove('open'));
+    if(!wasOpen) item.classList.add('open');
+  }
+
+  /* ── PERFORMER FILTER ── */
+  function filterPerformers(btn, type){
+    document.querySelectorAll('#performersGrid').forEach(grid=>{
+      grid.querySelectorAll('.performer-card').forEach(c=>{
+        c.style.display = (type==='all'||c.dataset.type===type)?'block':'none';
+      });
+    });
+    btn.closest('.filter-row').querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  /* ── NEWSLETTER OPTION TOGGLE ── */
+  function toggleOpt(btn){
+    btn.classList.toggle('selected');
+    // If "All" clicked, select all
+    if(btn.textContent.trim()==='All'){
+      const all = btn.parentElement.querySelectorAll('.nf-opt');
+      const sel = btn.classList.contains('selected');
+      all.forEach(b=>{ if(sel) b.classList.add('selected'); else b.classList.remove('selected'); });
+    }
+  }
+
+  /* ── PRICE CALCULATOR ── */
+  function calcPrice(){
+    const pkg = document.getElementById('packageSelect').value;
+    const el = document.getElementById('pricePreview');
+    if(!el) return;
+    if(!pkg||pkg==='0'){ el.textContent='Custom'; return; }
+    el.textContent='$'+parseInt(pkg).toLocaleString();
+  }
+
+  /* ── FORMS ── */
+  function handleBooking(e){
+    e.preventDefault();
+    showToast('Booking request submitted! We\'ll be in touch within 24 hours.');
+    e.target.reset();
+    const pp=document.getElementById('pricePreview'); if(pp) pp.textContent='$—';
+  }
+  function handleNewsletter(e){
+    e.preventDefault();
+    showToast('You\'re on the exclusive list. Welcome!');
+    e.target.reset();
+  }
+  function handleInsider(e){
+    e.preventDefault();
+    showToast('Welcome to the ShowInsight Insider List!');
+    e.target.reset();
+  }
+
+  /* ── ADMIN ── */
+  function openAdmin(){ document.getElementById('login-modal').classList.add('open'); }
+  function handleLogin(e){
+    e.preventDefault();
+    closeModal('login-modal');
+    document.getElementById('admin-panel').classList.add('open');
+    document.body.style.overflow='hidden';
+  }
+  function closeAdmin(){
+    document.getElementById('admin-panel').classList.remove('open');
+    document.body.style.overflow='';
+  }
+  function adminNav(el,section){
+    document.querySelectorAll('.admin-nav-item').forEach(i=>i.classList.remove('active'));
+    el.classList.add('active');
+    document.querySelectorAll('.admin-panel-section').forEach(s=>s.classList.remove('active'));
+    const sec=document.getElementById('admin-'+section);
+    if(sec) sec.classList.add('active');
+    document.getElementById('adminTitle').textContent=el.textContent.trim().toUpperCase();
+  }
+  function filterBookings(btn,status){
+    document.querySelectorAll('#admin-bookings .filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('#bookingsTable tr').forEach(r=>{
+      r.style.display=(status==='all'||r.dataset.status===status)?'':'none';
+    });
+  }
+
+  /* ── MODAL ── */
+  function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+  document.querySelectorAll('.modal-overlay').forEach(m=>{
+    m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('open'); });
+  });
+
+  /* ── TOAST ── */
+  function showToast(msg){
+    const t=document.createElement('div');
+    t.className='toast'; t.textContent=msg;
+    document.body.appendChild(t);
+    setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(()=>t.remove(),300); },3200);
+  }
+</script>
+</body>
+</html>
